@@ -1,10 +1,12 @@
+# In the following will denote with (GibbsLoop) the related function in Rcpp
+
 for(g in 1:ng){ ########################################################
-  
-  if(REDUCT){
+  # need to pass ng to (GibbsLoop)
+  if(REDUCT){ # need to pass REDUCT to (GibbsLoop)
     
     #   if(g > burnin)CLUST <- F
     
-    Y <- w[,notOther]
+    Y <- w[,notOther] # need to pass notOther to (GibbsLoop)
     if(RANDOM)Y <- Y - groupRandEff[,notOther] 
     if(TIME)  Y <- Y - mua[,notOther] - mug[,notOther] 
     
