@@ -1,5 +1,7 @@
 rm ( list = ls() )
 library("mvtnorm")
+library("matlib")
+library("cIRT")
 library(gjam)
 
 #### INPUT OF THE DATA ####
@@ -11,16 +13,23 @@ library(gjam)
 #data I specify `typeNames` as `'CA'`.  `CA` data are continuous above zero, 
 #with point mass at zero. 
 
-f <- gjamSimData(n = 500, S = 10, Q = 4, typeNames = 'CA')
+n = 500
+S = 10
+k = 4
+
+f <- gjamSimData(n = n, S = S, Q = k, typeNames = 'CA')
 # The object `f` includes elements needed to analyze the simulated data set.  
 # `f$typeNames` is a length-$S$ `character vector`. The `formula` follows 
 # standard R syntax. It does not start with `y ~`, because gjam is multivariate.
 # The multivariate response is supplied as a $n \times S$ `matrix` or
 # `data.frame ydata`.
 summary(f)
-ml  <- list(ng = 1000, burnin = 100, typeNames = f$typeNames)
-out <- gjam(f$formula, f$xdata, f$ydata, modelList = ml)
-summary(out)
+#ml  <- list(ng = 1000, burnin = 100, typeNames = f$typeNames)
+#out <- gjam(f$formula, f$xdata, f$ydata, modelList = ml)
+#summary(out)
+
+x = as.matrix(f$xdata) # matrix of measured (environmental) covariates (n * k)
+v = as.matrix(f$ydata) # matrix of species presence/absence data (in a continuous framework) (n * S)
 
 #### CONSTRUCTION OF THE COVARIATES ####
 
@@ -29,6 +38,11 @@ summary(out)
 alpha0 = 1 # Mass parameter of the Dirichlet process
 
 #### SOME MATRICES TO BE PRECOMPUTED ####
+B <- matrix(rnorm(S * k, 0, 100), S) # true covariates
+R <- riwishart(S + 1, diag(n))
+e <- matrix(rnorm(n * S, 0, 100), n)
+
+zsim <- x %*% t(B) + e
 
 #### FIT OF THE MODEL ####
 
