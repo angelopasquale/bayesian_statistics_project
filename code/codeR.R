@@ -1,7 +1,8 @@
 rm ( list = ls() )
 library("mvtnorm")
 library("matlib")
-library("cIRT")
+# install_github("cran/MCMCpack"), for inverse wishart, but just for the moment
+library("MCMCpack")
 library(gjam)
 
 #### INPUT OF THE DATA ####
@@ -13,7 +14,7 @@ library(gjam)
 #data I specify `typeNames` as `'CA'`.  `CA` data are continuous above zero, 
 #with point mass at zero. 
 
-n = 500
+n = 5
 S = 10
 k = 4
 
@@ -38,21 +39,26 @@ v = as.matrix(f$ydata) # matrix of species presence/absence data (in a continuou
 alpha0 = 1 # Mass parameter of the Dirichlet process
 
 #### SOME MATRICES TO BE PRECOMPUTED ####
-B <- matrix(rnorm(S * k, 0, 100), S) # true covariates
-R <- riwishart(S + 1, diag(n))
-e <- matrix(rnorm(n * S, 0, 100), n)
+muBeta = rep ( 0, times=k ) # Prior mean of the beta coefficients
+sigmaBeta = diag ( k ) # Prior variance-covariance matrix of the beta coefficients
+B <- matrix(data = 0, nrow = S, ncol = k) # true covariates
 
-zsim <- x %*% t(B) + e
+for (j in seq(1,S,1)) {
+  B[j,] <- rmvnorm ( n = 1, mean = muBeta, sigma = 100*sigmaBeta )
+}
 
-#### FIT OF THE MODEL ####
+mue = rep ( 0, times=S ) # Prior mean of e
+R <- riwish(S + 1, diag(S)) # Prior variance-covariance matrix of the e 
 
-# Number of iterations
-posteriorDraws = 1
-burnInIterations = 0
+e <- matrix(data = 0, nrow = n, ncol = S) # error
 
-for ( niter in 1:(posteriorDraws + burnInIterations) ) { # MCMC loop
-  
-  
-  
-  
-} # End MCMC loop
+for (i in seq(1,n,1)) {
+  e[i,] <- rmvnorm ( n = 1, mean = mue, sigma = R )
+}
+
+vsim <- x %*% t(B) + e
+# How to interpret these values? They do not seem to have any sense, moreover there are any hyperparameters
+# in the Core Model, how to write a first basic Gibbs Sampler fot it?
+
+# for inverse wishart and related computations see gjam library (for instance gjamSimData function), 
+# it is done using Rcpp 
