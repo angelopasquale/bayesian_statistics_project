@@ -101,7 +101,7 @@ p <- numeric(N_stick)
 posteriorDraws = 1
 burnInIterations = 0
 
-alpha0 = 1e4 # Mass parameter of the Dirichlet process
+alpha0 = 1e2 # Mass parameter of the Dirichlet process
 compute_GD_prior <- function(N_stick, alpha0){
   xi <- numeric(N_stick)
   for (j in seq(1, N_stick-1)) {
