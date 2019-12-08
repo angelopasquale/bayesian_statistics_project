@@ -1,7 +1,8 @@
 rm ( list = ls() )
 library("mvtnorm")
 library("matlib")
-# install_github("cran/MCMCpack"), for inverse wishart, but just for the moment
+library("devtools")
+#install_github("cran/MCMCpack")#, for inverse wishart, but just for the moment
 library("MCMCpack")
 library(gjam)
 
