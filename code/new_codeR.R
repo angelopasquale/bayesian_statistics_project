@@ -22,7 +22,7 @@ n = 5 # number of sites
 S = 10 # number of species
 k = 4 # number of covariates (no intercept)
 
-f <- gjamSimData(n = n, S = S, Q = k, typeNames = 'PA')
+f <- gjamSimData(n = n, S = S, Q = k, typeNames = 'CA')
 # The object `f` includes elements needed to analyze the simulated data set.  
 # `f$typeNames` is a length-$S$ `character vector`. The `formula` follows 
 # standard R syntax. It does not start with `y ~`, because gjam is multivariate.
@@ -86,7 +86,7 @@ for (j in seq(1,S,1)) {
   B[j,] <- rmvnorm ( n = 1, mean = muBeta, sigma = 100*sigmaBeta )
 }
 
-sigma_eps2 = 1e4
+sigma_eps2 = 1e6
 
 # Dirichlet process
 
@@ -95,8 +95,12 @@ n_species = ncol ( v )
 # each label belongs to {1,...,N}
 #labels = rep ( 1, times = n_species )
 labels = seq(1,n_species)
-clusterSize = rep(1,N_stick)
+clusterSize = rep(0,N_stick)
 names(clusterSize) <- seq(1,N_stick)
+cluster_dx = matrix(0,nrow = k+1, ncol = N_stick)
+colnames(cluster_dx) <- seq(0,N_stick)
+cluster_dx2 = matrix(0,nrow = k+1, ncol = N_stick)
+colnames(cluster_dx2) <- seq(0,N_stick)
 clusterMatrix = matrix ( rep(1, times=n_species*n_species), nrow = n_species, ncol = n_species )
 
 p <- rep ( 1/n_species, times = N_stick)
@@ -106,7 +110,7 @@ pl <- rep ( 0, times = N_stick)
 posteriorDraws = 1
 burnInIterations = 0
 
-alpha0 = 1e2 # Mass parameter of the Dirichlet process
+alpha0 = 1e-1 # Mass parameter of the Dirichlet process
 
 norm_vec <- function(x) sqrt(sum(x^2))
 
@@ -130,12 +134,12 @@ xi <- compute_GD_prior(N_stick,alpha0)
 # given the vector labels = [1,..., 1] of length = S
 p[1] <- xi[1]
 p[2:N_stick] <- sapply(2:N_stick, function(j) xi[j] * prod(1 - xi[1:(j-1)]))
-p[N_stick] <- 1 - sum( p[1:N_stick-1] )
+p[N_stick] <- abs(1 - sum( p[1:N_stick-1] ))
 
 for ( niter in 1:(posteriorDraws + burnInIterations) ) { # MCMC loop
   # Step 1 : resample the cluster assignments
   #for each species l = 1,...,n_species do
-  
+  mu_Zj <- c(0)
   for ( l in 1:n_species ) { # Loop on species
     print(labels)
     
@@ -143,10 +147,13 @@ for ( niter in 1:(posteriorDraws + burnInIterations) ) { # MCMC loop
     
     for (j in seq(1,N_stick)) {
       #print(j)
+      cluster_dx[,labels[l]] = cluster_dx[,labels[l]] + (v[,l] - x %*% B[l,])
+      cluster_dx2[,labels[l]] = cluster_dx2[,labels[l]] + (v[,l] - x %*% B[l,] - W %*% Z[j, ])
+      
       if ( !(j %in% labels) ){ 
         # if j is not a label (e.g. not a stick position), we generate it 
         Z[j, ] = rmvnorm ( n = 1, mean = rep(0, times = r), sigma = Dz )
-        #print('entered if')
+        print('entered if')
         clusterSize[labels[l]] = 1
       }
       else {
@@ -156,38 +163,39 @@ for ( niter in 1:(posteriorDraws + burnInIterations) ) { # MCMC loop
         for ( c in 1:length(uniqueLabels) ) {
           #print(which(labels == j))
           if ( uniqueLabels[c] == labels[l] ) {
-            clusterSize[labels[l]] = clusterSize[labels[l]] + sum(labels == labels[l])
+            clusterSize[labels[l]] = clusterSize[labels[l]] + 1
             #print(uniqueLabels[c])
             #print(l)
-            #print('entered ELSE')
-            dx = v[,l] - x %*% B[l,]
+            print('entered ELSE')
+            
             Sigma_Zj = solve(clusterSize[labels[l]]/sigma_eps2 * t(W) %*% W + solve(Dz))
-            mu_Zj = mu_Zj + (Sigma_Zj %*% t(W) / sigma_eps2) %*% dx
+            mu_Zj = (Sigma_Zj %*% t(W) / sigma_eps2) %*% cluster_dx[,labels[l]]
             Z[j, ] = rmvnorm ( n = 1, mean = mu_Zj, sigma = Sigma_Zj ) 
-            
-            # update labels according to full conditional 3 
-
-            dx2 = v[,l] - x %*% B[l,] - W %*% Z[j, ]
-            pl[1:N_stick] <- clusterSize[l]/n_species * p[1:N_stick] * exp( - 1 / (2*sigma_eps2) * norm_vec(dx2)^2 )
-            
-            #cat ( "\014" ) # clear the screen
-            #print(p)
-            #print(pl)
-            labels[l] = sample(1:N_stick, size = 1, replace=TRUE, prob = pl)
-            
-            # UPDATE of p
-            xi <- compute_GD_prior(N_stick,alpha0)
-            # c <- 2
-            # given the vector labels = [1,..., 1] of length = S
-            p[1] <- xi[1]
-            p[2:N_stick] <- sapply(2:N_stick, function(j) xi[j] * prod(1 - xi[1:(j-1)]))
-            p[N_stick] <- 1 - sum( p[1:N_stick-1] )
             
           }
         }
         
         #clusterSize[labels[l]] = clusterSize[labels[l]] + sum(labels[l] == j)
       }
+      
+      # update labels according to full conditional 3 
+      
+      pl[1:N_stick] <- p[1:N_stick] * exp( - 1 / (2*sigma_eps2) * norm_vec(cluster_dx2)^2 )
+      
+      pl[1:N_stick] <- pl[1:N_stick] / sum(pl[1:N_stick])
+      
+      #cat ( "\014" ) # clear the screen
+      #print(p)
+      #print(pl)
+      labels[l] = sample(1:N_stick, size = 1, replace=TRUE, prob = pl)
+      
+      # UPDATE of p
+      xi <- compute_GD_prior(N_stick,alpha0)
+      # c <- 2
+      # given the vector labels = [1,..., 1] of length = S
+      p[1] <- xi[1]
+      p[2:N_stick] <- sapply(2:N_stick, function(j) xi[j] * prod(1 - xi[1:(j-1)]))
+      p[N_stick] <- abs(1 - sum( p[1:N_stick-1] ))
       
       # xi <- compute_GD_prior(N_stick,alpha0)
       # # c <- 2
