@@ -18,9 +18,9 @@ library(gjam)
 #data I specify `typeNames` as `'CA'`.  `CA` data are continuous above zero, 
 #with point mass at zero. 
 
-n = 5
-S = 10
-k = 4
+n = 5 # number of sites
+S = 10 # number of species
+k = 4 # number of covariates (no intercept)
 
 f <- gjamSimData(n = n, S = S, Q = k, typeNames = 'CA')
 # The object `f` includes elements needed to analyze the simulated data set.  
@@ -41,13 +41,6 @@ v = as.matrix(f$ydata) # matrix of n_species presence/absence data (in a continu
 #### HYPERPARAMETERS ####
 
 #### SOME MATRICES TO BE PRECOMPUTED ####
-muBeta = rep ( 0, times=k ) # Prior mean of the beta coefficients
-sigmaBeta = diag ( k ) # Prior variance-covariance matrix of the beta coefficients
-B <- matrix(data = 0, nrow = S, ncol = k) # true covariates
-
-for (j in seq(1,S,1)) {
-  B[j,] <- rmvnorm ( n = 1, mean = muBeta, sigma = 100*sigmaBeta )
-}
 
 mu_e = rep ( 0, times=S ) # Prior mean of e
 R <- riwish(S + 1, diag(S)) # Prior variance-covariance matrix of the e 
@@ -82,9 +75,16 @@ N_stick = 30
 #  Z[j,] <- rmvnorm ( n = 1, mean = mu_Zj, sigma = Dz ) 
 #}
 
-w <- rmvnorm ( n = n, mean = rep(0, times = r), sigma = diag(r) ) 
-# need to trnaspose for the computation of Bx_i + Q(k)Zw_i'
+W <- rmvnorm ( n = n, mean = rep(0, times = r), sigma = diag(r) ) 
+# need to transpose for the computation of Bx_i + Q(k)Zw_i'
 
+muBeta = rep ( 0, times=k ) # Prior mean of the beta coefficients
+sigmaBeta = diag ( k ) # Prior variance-covariance matrix of the beta coefficients
+B <- matrix(data = 0, nrow = S, ncol = k) # coefficient matrix
+
+for (j in seq(1,S,1)) {
+  B[j,] <- rmvnorm ( n = 1, mean = muBeta, sigma = 100*sigmaBeta )
+}
 
 # Dirichlet process
 
@@ -116,8 +116,8 @@ compute_GD_prior <- function(N_stick, alpha0){
 }
 
 for ( niter in 1:(posteriorDraws + burnInIterations) ) { # MCMC loop
-    # Step 1 : resample the cluster assignments
-    #for each species l = 1,...,n_species do
+  # Step 1 : resample the cluster assignments
+  #for each species l = 1,...,n_species do
   Z <- matrix(data = 0, nrow = N_stick, ncol = r) 
   
   xi <- compute_GD_prior(N_stick,alpha0)
