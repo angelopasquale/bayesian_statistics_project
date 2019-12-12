@@ -55,8 +55,27 @@
   solveRcpp(.rwish(df,solveRcpp(S)))
 }
 
+#IMPORTANT COMMENT ON IMPORTANT LINES
+#line 4006 - gjam()
+#line 4780 - starts loop for gibbs sampling that ends at line 5323
+#line 5217 - if (g>burnin) ->here Taylor does important things (I think)
 rmvnormRcpp
 
-updateBeta
+updateBeta (that calls) betaWrapper
 
 .wWrapper
+
+tnormMVNmatrix
+
+.xpredSetup
+
+.setupFactors #function that update cluster size (I think), used in line 4615 in gjamHfunctions.R
+
+solveRcpp
+
+.updateW (that calls) .wWrapper
+
+.contrastCoeff
+
+.dMVN #mvn density for mean 0 
+dmvnormRcpp

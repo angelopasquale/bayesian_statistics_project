@@ -66,6 +66,14 @@ eta_h <- rinvgamma(r, 1/2, 1/10^4)
 
 Dz <- riwish(2 + r - 1, 4 * 1/eta_h * diag(r)) 
 
+#######################################################################
+#IN TAYLOR'S CODE
+# otherpar$D <- .riwish(df = (2 + r + N), 
+#                       S = (crossprod(otherpar$Z) +
+#                              2*2*diag(rgamma(r,shape=1,rate=0.001))))
+#######################################################################
+
+
 # N_stick = truncation level for stick breaking factors, user chosen
 N_stick = 30 
 #Z <- rmvnorm ( n = N_stick, mean = rep(0, times = r), sigma = Dz ) 
