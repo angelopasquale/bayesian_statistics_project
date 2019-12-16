@@ -3,7 +3,7 @@ library("mvtnorm")
 
 #### INPUT OF THE DATA ####
 
-data.input = read.csv ( "dataset/dataset.csv" )
+data.input = read.csv ( "dataset_bubi.csv" )
 
 # Transform the data so that they are supported on the real line
 y = as.matrix ( log ( data.input + 1e-8 ) )
@@ -60,8 +60,10 @@ muBetaSigmaBetaMuBeta = t(muBeta) %*% sigmaBetaInv %*% muBeta / 2
 cells = nrow ( y )
 
 # State of the Markov chain
+#ALL'INIZIO HO UJ SOLO LABELS, OSSIA 1
 labels = rep ( 1, times = cells )
 beta = matrix ( rep(0, times=ncol(h)), nrow = 1, ncol = ncol(h) )
+#ALL'INIZIO clusterSize è UN VETTORE DI UN ELEMENTO INIZIALLIZZATO A 2592
 clusterSize = c ( cells )
 clusterMatrix = matrix ( rep(1, times=cells*cells), nrow = cells, ncol = cells )
 y[NAs] = rep ( 0, times = length(NAs) )
@@ -76,28 +78,42 @@ for ( niter in 1:(posteriorDraws + burnInIterations) ) { # MCMC loop
   for ( i in 1:cells ) { # Loop on cells
     cat ( "\014" )
     cat ( "iter: ", niter, " cell: ", i, sep = "" )
-    
+    #EQUATION 12 IN BUCH REPORT
     betaBar = solve ( sigmaInv, t( y[i,] %*% h / sigma2 + t(muBeta) %*% sigmaBetaInv ) )
     
     log.prob.new = log(alpha0) - length(times) / 2 * log ( 2*pi*sigma2 ) - log ( detSigmaBeta ) / 2 + log ( detSigma ) / 2
                  - t(y[i,]) %*% y[i,] / (2*sigma2) - muBetaSigmaBetaMuBeta + t(betaBar) %*% sigmaInv %*% betaBar / 2
+    #EQUATION 10 IN BUCH REPORT
     prob.new = exp ( log.prob.new )
-    
+    #HERE I TAKE FROM LABELS EX: (1, 2, 2, 1, 3, 4) ONLY (1, 2, 3, 4)
     uniqueLabels = unique(labels)
+    #ORA MI CALCOLO LA PROB DI ASSEGANRE LA MIA NUOVA OSSERVAZIONE AD UN CLUSTER GIà ESISTENTE,
+    #PER FARLO MI CREO UN VETTORE VUOTO DELLA LUNGHEZZA DEL NUMERO DI CLUSTER CHE HO GIà
+    #E MI CALCOLO IN UN CICLO LA PROB DI FINIRE NEL SINGOLO CLUSTER (FACCIO STO RAGIONAMENTO PER OGNI CLUSTER)
     prob.old = rep ( 0, times = length(uniqueLabels) ) # Probability of assigning to an existing cluster
     twopisigma = (2 * pi * sigma2) ^ (-length(times) / 2)
+    
+    #ALL'INIZIO AVRò SOLO UN'ITERAZIONE POICHé labels è STATO INIZIALLIZZATO A TUTTI 1
+    #E PERTANTO HO UN SOLO uniquelabels
     for ( c in 1:length(uniqueLabels) ) {
       if ( uniqueLabels[c] != labels[i] ) {
+        #EQUATION 9 IN BUCH REPORT (LAST TERM IN THE EXPONENTIAL)
         dx = y[i,] - h %*% beta[c,]
+        #EQUATION 9 IN BUCH REPORT -> WE UPDATE THE PROB OF A NEW OBSERVATION TO BELONG TO AN
+        #                             EXISTING CLUSTER
+        #ALL'INIZIO AVRò SOLO UNA PROB OLD PERCHé HO UN SOLO CLUSTER E AVRò SOLO UN ELEMENTO 
+        #IN clusterSize, PERTANTO clusterSize[c] HA SENSO PERCHé ACCEDO ALL'UNICO ELEMENTO
         prob.old[c] = clusterSize[c] * twopisigma * exp ( -t(dx) %*% dx / (2*sigma2) )
       }
     }
     
+    # MI CREO nci,−i
     # The i-th cell is removed from its cluster
     clusterMatrix[,i] = rep ( 0, times = cells )
     clusterMatrix[i,] = rep ( 0, times = cells )
     clusterSize[labels[i]] = clusterSize[labels[i]] - 1
     
+    #IF nci,−i=0 RESAMPLE THE COEFFICIENT beta_c
     if ( clusterSize[labels[i]] == 0 )
       beta[labels[i],] = rep ( NA, times = ncol(h) )
     
@@ -138,7 +154,8 @@ for ( niter in 1:(posteriorDraws + burnInIterations) ) { # MCMC loop
     sumy = rep ( 0, times = length(times) )
     for ( i in which(labels == l) )
       sumy = sumy + y[i,]
-      
+    #STESSA FORMULA DI PRIMA SOLO CHE AL POSTO DI y[i,] %*% h AVREMO sumy %*% h PERCHé 
+    #STO PRENDENDO TUTTE LE RIGHE CHE APPARTENGONO AD UN DATO CLUSTER E LE STO SOMMANDO TRA LORO
     betaBar = solve ( sigmaInv, t( sumy %*% h / sigma2 + t(muBeta) %*% sigmaBetaInv ) )
     beta[labels[i],] = rmvnorm ( 1, mean = betaBar, sigma = sigma )
   } 
