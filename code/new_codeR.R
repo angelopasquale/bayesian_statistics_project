@@ -19,7 +19,7 @@ library(gjam)
 #with point mass at zero. 
 
 n = 5 # number of sites
-S = 10 # number of species
+S = 2 # number of species
 k = 4 # number of covariates (no intercept)
 
 f <- gjamSimData(n = n, S = S, Q = k, typeNames = 'CA')
@@ -75,7 +75,7 @@ Dz <- riwish(2 + r - 1, 4 * 1/eta_h * diag(r))
 
 
 # N_stick = truncation level for stick breaking factors, user chosen
-N_stick = 30 
+N_stick = 10
 #Z <- rmvnorm ( n = N_stick, mean = rep(0, times = r), sigma = Dz ) 
 
 mu_Zj <- c(0)
@@ -100,7 +100,7 @@ sigma_eps2 = 1e6
 
 n_species = ncol ( v )
 
-# each label belongs to {1,...,N}
+# each label belongs to {1,...,N_stick}
 #labels = rep ( 1, times = n_species )
 labels = seq(1,n_species)
 clusterSize = rep(0,N_stick)
@@ -118,7 +118,7 @@ pl <- rep ( 0, times = N_stick)
 posteriorDraws = 1
 burnInIterations = 0
 
-alpha0 = 1e-1 # Mass parameter of the Dirichlet process
+alpha0 = 1e-3 # Mass parameter of the Dirichlet process
 
 norm_vec <- function(x) sqrt(sum(x^2))
 
@@ -163,6 +163,9 @@ for ( niter in 1:(posteriorDraws + burnInIterations) ) { # MCMC loop
         Z[j, ] = rmvnorm ( n = 1, mean = rep(0, times = r), sigma = Dz )
         print('entered if')
         clusterSize[labels[l]] = 1
+        print(labels[l])
+        print(labels)
+        print(clusterSize)
       }
       else {
         # if j is a label, we count its occurencies, i.e. the cluster size
@@ -175,11 +178,11 @@ for ( niter in 1:(posteriorDraws + burnInIterations) ) { # MCMC loop
             #print(uniqueLabels[c])
             #print(l)
             print('entered ELSE')
-            
+            print(labels)
+            print(clusterSize)
             Sigma_Zj = solve(clusterSize[labels[l]]/sigma_eps2 * t(W) %*% W + solve(Dz))
             mu_Zj = (Sigma_Zj %*% t(W) / sigma_eps2) %*% cluster_dx[,labels[l]]
             Z[j, ] = rmvnorm ( n = 1, mean = mu_Zj, sigma = Sigma_Zj ) 
-            
           }
         }
         
@@ -268,3 +271,5 @@ for ( niter in 1:(posteriorDraws + burnInIterations) ) { # MCMC loop
 
 # TODO:
 # need to update cluster_size in the loop
+clusterSize
+sum(clusterSize)
