@@ -91,6 +91,13 @@ posteriorDraws = 3
 burnInIterations = 0
 
 alpha0 = 1e2 # Mass parameter of the Dirichlet process
+
+###############################################
+#STA FUNZIONE è FATTA NELL'hfunction DA .sampleP <- CHIAMATA IN .getPars <-, HO PROVATO A DARCI UN OCCHIO (LA CHIAMA IN 
+# tmp <- .getPars, MA CI VUOLE UN BEL PO DI TEMPO. SE CI CAPITE QUALCOSA ABBIAMO RISOLTO IL PROBLEMA DEI p,
+#MA COME ABBIAMO FATTO NOI MI SEMBRA TORNI A LIVELLO DI NOTAZIONI CON QUELLO CHE HA FATTO LUI IN hfunction
+###############################################
+
 compute_GD_prior <- function(N_stick, alpha0){
   xi <- numeric(N_stick)
   for (j in seq(1, N_stick-1)) {
@@ -116,7 +123,7 @@ for ( niter in 1:(posteriorDraws + burnInIterations) ) { # MCMC loop
   # c <- 2
   # given the vector k = [1,..., 1] of length = S
   p[1] <- xi[1]
-  p[2:N_stick] <- sapply(2:N_stick, function(j) xi[j] * prod(1 - xi[1:(j-1)]))
+  p[2:N_stick-1] <- sapply(2:N_stick, function(j) xi[j] * prod(1 - xi[1:(j-1)]))
   p[N_stick] <- 1 - sum( p[1:N_stick-1] )
   
   for ( j in 1:N_stick ) { 
