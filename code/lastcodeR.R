@@ -80,7 +80,7 @@ for (j in seq(1,S,1)) {
 n_species = ncol ( V )
 n_sites = n
 
-# each label belongs to {1,...,N}
+# each label belongs to {1,...,N_stick}
 k = c();
 
 p <- numeric(N_stick)
