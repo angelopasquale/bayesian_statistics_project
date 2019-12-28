@@ -75,6 +75,8 @@ for (j in seq(1,S,1)) {
   B[j,] <- rmvnorm ( n = 1, mean = muBeta, sigma = 100*sigmaBeta )
 }
 
+cardinality_S = rep ( 0, times=N_stick )
+
 # Dirichlet process
 
 n_species = ncol ( V )
@@ -127,53 +129,37 @@ for ( niter in 1:(posteriorDraws + burnInIterations) ) { # MCMC loop
   p[N_stick] <- 1 - sum( p[1:N_stick-1] )
   
   for ( j in 1:N_stick ) { 
-    
     # Step 1
+      print(j)
     if (!(j %in% k)) {
+      print('entered if')
       Z[j,] = rmvnorm ( n = 1, mean = rep(0, times = r), sigma = Dz )
     } 
-    else {
-      cardinality_Sj = sum( j == k )
-      Sigma_Zj = solve(cardinality_Sj/sigmaeps2 * t(W) %*% W + solve(Dz) )
+    else { # if j in k
+      print('entered else')
+      cardinality_S[j] = cardinality_S[j] + sum( j == k )
+      print(cardinality_S[j])
+      Sigma_Zj = solve(cardinality_S[j]/sigmaeps2 * t(W) %*% W + solve(Dz) )
       mu_Zj = c(0)
       for (l in 1:n_species) {
         if (k[l] == j){
+          print('entered else-if')
           mu_Zj = mu_Zj + 1/sigmaeps2 * Sigma_Zj %*% t(W) %*% ( t(t(V[,l])) - x %*% B[l,] )
         }
+        Q[j,k[l]] = 1
       }
       Z[j,] = rmvnorm ( n = 1, mean = mu_Zj, sigma = Sigma_Zj )
-      Q[j,k[l]] = 1
     }
   }
   
-   
   A = Q %*% Z
-  
-  # Step 2
-  for ( i in 1:n_sites ) {
-    Sigma_W = solve(1/sigmaeps2 * t(A) %*% A + diag(r))
-    mu_W = 1/sigmaeps2 * Sigma_W %*% A %*% (t(t(V[i,])) - B %*% x[i,])
-    W[i,] = rmvnorm ( n = 1, mean = mu_W, sigma = Sigma_W )
-  }
   
   # Step 3
   for ( l in 1:n_species ) { # Loop on species
     for (j in 1:N_stick) {
       pl[l,j] <- p[j] * exp( -1/(2*sigmaeps2) * norm_vec(V[,l] - x %*% B[l,] - W %*% Z[j,])^2)
     }
-    k[l] = sample(1:N_stick, size = 1, replace=TRUE, prob = pl[l,])
+    k[l] = sample(N_stick, size = 1, replace=TRUE, prob = pl[l,])
   }
   
-  # Step 4 : maybe once and for all outside all
-  
-  # Step 5
-  dx = c(0)
-  for (i in 1:n_sites) {
-    dx = dx + norm_vec(V[i,] - B %*% x[i,] - A %*% W[i,])^2
-  }
-  #sigmaeps2 = invgamma::rinvgamma((n * S + nu)/2 + 1, dx/2 + nu/G^2)
-  sigmaeps2 = 1
-  
-  # Step 6
-  Dz = riwish(2 + r + N_stick - 1, t(Z) %*% Z + 4 * 1/eta_h * diag(r))
 } 
