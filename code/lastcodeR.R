@@ -146,7 +146,7 @@ for ( niter in 1:(posteriorDraws + burnInIterations) ) { # MCMC loop
           print('entered else-if')
           mu_Zj = mu_Zj + 1/sigmaeps2 * Sigma_Zj %*% t(W) %*% ( t(t(V[,l])) - x %*% B[l,] )
         }
-        Q[j,k[l]] = 1
+        Q[l,k[l]] = 1
       }
       Z[j,] = rmvnorm ( n = 1, mean = mu_Zj, sigma = Sigma_Zj )
     }
