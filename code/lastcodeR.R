@@ -142,10 +142,10 @@ for ( niter in 1:(posteriorDraws + burnInIterations) ) { # MCMC loop
   }
   
   cardinality_S = rep(0, times = N_stick)
-                      
+  
   for ( j in 1:N_stick ) { 
     # Step 1
-      print(j)
+    print(j)
     if (!(j %in% k)) {
       print('entered if')
       Z[j,] = rmvnorm ( n = 1, mean = rep(0, times = r), sigma = Dz )
@@ -169,8 +169,25 @@ for ( niter in 1:(posteriorDraws + burnInIterations) ) { # MCMC loop
   }
   
   A = Q %*% Z
-
+  
+  # Step 2
+  for ( i in 1:n_sites ) {
+    Sigma_W = solve(1/sigmaeps2 * t(A) %*% A + diag(r))
+    mu_W = 1/sigmaeps2 * Sigma_W %*% t(A) %*% (t(t(V[i,])) - B %*% x[i,])
+    W[i,] = rmvnorm ( n = 1, mean = mu_W, sigma = Sigma_W )
+  }
+  
+  # Step 5
+  dx = c(0)
+  for (i in 1:n_sites) {
+    dx = dx + norm_vec(V[i,] - B %*% x[i,] - A %*% W[i,])^2
+  }
+  #sigmaeps2 = invgamma::rinvgamma((n * S + nu)/2 + 1, dx/2 + nu/G^2)
+  sigmaeps2 = 1
+  
+  # Step 6
+  Dz = riwish(2 + r + N_stick - 1, t(Z) %*% Z + 4 * 1/eta_h * diag(r))
+  
 } 
-
 print(k)
 print(A)
