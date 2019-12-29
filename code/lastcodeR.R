@@ -66,10 +66,10 @@ G = 1
 sigmaeps2 <- 1e4
 
 muBeta = rep ( 0, times=n_cov ) # Prior mean of the beta coefficients
-sigmaBeta = diag ( k ) # Prior variance-covariance matrix of the beta coefficients
+sigmaBeta = diag ( n_cov ) # Prior variance-covariance matrix of the beta coefficients
 B <- matrix(data = 0, nrow = S, ncol = n_cov) # coefficient matrix
 
-pl = matrix(0,ncol = N_stick,nrow = n_species)
+pl = matrix(0,ncol = N_stick,nrow = S)
 
 for (j in seq(1,S,1)) {
   B[j,] <- rmvnorm ( n = 1, mean = muBeta, sigma = 100*sigmaBeta )
@@ -143,9 +143,10 @@ for ( niter in 1:(posteriorDraws + burnInIterations) ) { # MCMC loop
   
   cardinality_S = rep(0, times = N_stick)
   
+  names(cardinality_S) = seq(1,N_stick)
+  
   for ( j in 1:N_stick ) { 
     # Step 1
-    print(j)
     if (!(j %in% k)) {
       print('entered if')
       Z[j,] = rmvnorm ( n = 1, mean = rep(0, times = r), sigma = Dz )
@@ -153,8 +154,8 @@ for ( niter in 1:(posteriorDraws + burnInIterations) ) { # MCMC loop
     } 
     else { # if j in k
       print('entered else')
-      cardinality_S[j] = cardinality_S[j] + 1
-      print(cardinality_S[j])
+      cardinality_S[j] = sum(j==k)
+      print(paste('cardinality',cardinality_S[j]))
       Sigma_Zj = solve(cardinality_S[j]/sigmaeps2 * t(W) %*% W + solve(Dz) )
       mu_Zj = c(0)
       for (l in 1:n_species) {
