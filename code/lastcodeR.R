@@ -182,8 +182,8 @@ for ( niter in 1:(posteriorDraws + burnInIterations) ) { # MCMC loop
   for (i in 1:n_sites) {
     dx = dx + norm_vec(V[i,] - B %*% x[i,] - A %*% W[i,])^2
   }
-  #sigmaeps2 = invgamma::rinvgamma((n * S + nu)/2 + 1, dx/2 + nu/G^2)
-  sigmaeps2 = 1
+  sigmaeps2 = invgamma::rinvgamma(1,shape = (n * S + nu)/2 + 1, rate = dx/2 + nu/G^2)
+  #sigmaeps2 = 1
   
   # Step 6
   Dz = riwish(2 + r + N_stick - 1, t(Z) %*% Z + 4 * 1/eta_h * diag(r))
