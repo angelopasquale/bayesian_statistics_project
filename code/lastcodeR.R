@@ -10,9 +10,9 @@ library(gjam)
 
 #### INPUT OF THE DATA ####
 
-n = 5 # number of sites
-S = 15 # number of species
-n_cov = 4 # number of covariates (no intercept)
+n = 10 # number of sites
+S = 20 # number of species
+n_cov = 10 # number of covariates (no intercept)
 
 f <- gjamSimData(n = n, S = S, Q = n_cov, typeNames = 'CA')
 # The object `f` includes elements needed to analyze the simulated data set.  
@@ -49,7 +49,7 @@ eta_h <- rinvgamma(r, 1/2, 1/10^4)
 Dz <- riwish(2 + r - 1, 4 * 1/eta_h * diag(r)) 
 
 # N_stick = truncation level for stick breaking factors, user chosen
-N_stick = 10 
+N_stick = 15
 #Z <- rmvnorm ( n = N_stick, mean = rep(0, times = r), sigma = Dz ) 
 
 #mu_Zj <- rep(0, times = r)
@@ -62,7 +62,7 @@ W <- rmvnorm ( n = n, mean = rep(0, times = r), sigma = diag(r) )
 
 
 nu = 1
-G = 1
+G = 1e3
 sigmaeps2 <- 1e4
 
 muBeta = rep ( 0, times=n_cov ) # Prior mean of the beta coefficients
@@ -183,7 +183,7 @@ for ( niter in 1:(posteriorDraws + burnInIterations) ) { # MCMC loop
   for (i in 1:n_sites) {
     dx = dx + norm_vec(V[i,] - B %*% x[i,] - A %*% W[i,])^2
   }
-  sigmaeps2 = invgamma::rinvgamma(1,shape = (n * S + nu)/2 + 1, rate = dx/2 + nu/G^2)
+  sigmaeps2 = invgamma::rinvgamma(1,shape = (n * S + nu)/2 + 1, scale = dx/2 + nu/G^2)
   #sigmaeps2 = 1
   
   # Step 6
@@ -192,3 +192,8 @@ for ( niter in 1:(posteriorDraws + burnInIterations) ) { # MCMC loop
 } 
 print(k)
 print(A)
+
+V_sim = matrix(0,nrow = n_sites, ncol = n_species)
+for (i in seq(1,n_sites)) {
+  V_sim[i,] = rmvnorm ( n = 1, mean = B %*% x[i,] + A %*% W[i,], sigma = sigmaeps2 * diag(n_species) )
+}
