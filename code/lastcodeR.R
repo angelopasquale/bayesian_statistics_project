@@ -14,7 +14,7 @@ n = 10 # number of sites
 S = 20 # number of species
 n_cov = 10 # number of covariates (no intercept)
 
-f <- gjamSimData(n = n, S = S, Q = n_cov, typeNames = 'CA')
+f <- gjamSimData(n = n, S = S, Q = n_cov, typeNames = 'PA')
 # The object `f` includes elements needed to analyze the simulated data set.  
 # `f$typeNames` is a length-$S$ `character vector`. The `formula` follows 
 # standard R syntax. It does not start with `y ~`, because gjam is multivariate.
@@ -148,19 +148,19 @@ for ( niter in 1:(posteriorDraws + burnInIterations) ) { # MCMC loop
   for ( j in 1:N_stick ) { 
     # Step 1
     if (!(j %in% k)) {
-      print('entered if')
+      #print('entered if')
       Z[j,] = rmvnorm ( n = 1, mean = rep(0, times = r), sigma = Dz )
       cardinality_S[j] = 1
     } 
     else { # if j in k
-      print('entered else')
+      #print('entered else')
       cardinality_S[j] = sum(j==k)
       print(paste('cardinality',cardinality_S[j]))
       Sigma_Zj = solve(cardinality_S[j]/sigmaeps2 * t(W) %*% W + solve(Dz) )
       mu_Zj = c(0)
       for (l in 1:n_species) {
         if (k[l] == j){
-          print('entered else-if')
+          #print('entered else-if')
           mu_Zj = mu_Zj + 1/sigmaeps2 * Sigma_Zj %*% t(W) %*% ( t(t(V[,l])) - x %*% B[l,] )
         }
         Q[l,k[l]] = 1
@@ -190,10 +190,11 @@ for ( niter in 1:(posteriorDraws + burnInIterations) ) { # MCMC loop
   Dz = riwish(2 + r + N_stick - 1, t(Z) %*% Z + 4 * 1/eta_h * diag(r))
   
 } 
-print(k)
-print(A)
+
 
 V_sim = matrix(0,nrow = n_sites, ncol = n_species)
 for (i in seq(1,n_sites)) {
   V_sim[i,] = rmvnorm ( n = 1, mean = B %*% x[i,] + A %*% W[i,], sigma = sigmaeps2 * diag(n_species) )
 }
+print(V)
+print(V_sim)
