@@ -14,7 +14,7 @@ n = 10 # number of sites
 S = 20 # number of species
 n_cov = 10 # number of covariates (no intercept)
 
-f <- gjamSimData(n = n, S = S, Q = n_cov, typeNames = 'PA')
+f <- gjamSimData(n = n, S = S, Q = n_cov, typeNames = 'CA')
 # The object `f` includes elements needed to analyze the simulated data set.  
 # `f$typeNames` is a length-$S$ `character vector`. The `formula` follows 
 # standard R syntax. It does not start with `y ~`, because gjam is multivariate.
@@ -26,7 +26,15 @@ summary(f)
 #summary(out)
 
 x = as.matrix(f$xdata) # matrix of measured (environmental) covariates (n * k)
-V = as.matrix(f$ydata) # matrix of n_species presence/absence data (in a continuous framework) (n * S)
+Y = as.matrix(f$ydata) # matrix of n_species presence/absence data (in a continuous framework) (n * S)
+
+# 3.A.2 for simulation of latent variable V
+V = Y
+
+
+
+
+
 
 #### CONSTRUCTION OF THE COVARIATES ####
 
@@ -89,10 +97,10 @@ p <- numeric(N_stick)
 pl <- matrix(0, nrow = n_species, ncol = N_stick)
 
 # Number of iterations
-posteriorDraws = 3
+posteriorDraws = 1
 burnInIterations = 0
 
-alpha0 = 1e1 # Mass parameter of the Dirichlet process
+alpha0 = 1e2 # Mass parameter of the Dirichlet process
 
 ###############################################
 #STA FUNZIONE è FATTA NELL'hfunction DA .sampleP <- CHIAMATA IN .getPars <-, HO PROVATO A DARCI UN OCCHIO (LA CHIAMA IN 
@@ -126,6 +134,7 @@ k = sample(1:N_stick, size = n_species, replace=TRUE, prob = p)
 
 names(k) <- seq(1,n_species)
 
+# start of the Gibbs sampler
 for ( niter in 1:(posteriorDraws + burnInIterations) ) { # MCMC loop
   
   # Step 1 : resample the cluster assignments
@@ -146,6 +155,7 @@ for ( niter in 1:(posteriorDraws + burnInIterations) ) { # MCMC loop
   names(cardinality_S) = seq(1,N_stick)
   
   for ( j in 1:N_stick ) { 
+    
     # Step 1
     if (!(j %in% k)) {
       #print('entered if')
@@ -171,6 +181,9 @@ for ( niter in 1:(posteriorDraws + burnInIterations) ) { # MCMC loop
   
   A = Q %*% Z
   
+  # Step 0
+  # sampling of latent variable parameters mu_V, R_V and simulation of actual V 
+  
   # Step 2
   for ( i in 1:n_sites ) {
     Sigma_W = solve(1/sigmaeps2 * t(A) %*% A + diag(r))
@@ -190,11 +203,17 @@ for ( niter in 1:(posteriorDraws + burnInIterations) ) { # MCMC loop
   Dz = riwish(2 + r + N_stick - 1, t(Z) %*% Z + 4 * 1/eta_h * diag(r))
   
 } 
-
+# end of Gibbs sampler
 
 V_sim = matrix(0,nrow = n_sites, ncol = n_species)
 for (i in seq(1,n_sites)) {
   V_sim[i,] = rmvnorm ( n = 1, mean = B %*% x[i,] + A %*% W[i,], sigma = sigmaeps2 * diag(n_species) )
 }
-print(V)
-print(V_sim)
+#print(V)
+#print(V_sim)
+
+print(A)
+print(k)
+
+#check of conformity
+
