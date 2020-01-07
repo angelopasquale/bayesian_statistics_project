@@ -9,6 +9,7 @@ library("invgamma")
 library("MixMatrix")
 library("gdirmn")
 library(gjam)
+library(tictoc)
 
 n = 15
 S = 20
@@ -29,7 +30,7 @@ x = as.matrix(f$xdata) # matrix of measured (environmental) covariates (n * k)
 Y = as.matrix(f$ydata) # matrix of n_species presence/absence data (in a continuous framework) (n * S)
 
 # Number of iterations
-posteriorDraws = 1e3
+posteriorDraws = 1e4
 burnInIterations = 1
 
 # Number of latent factors

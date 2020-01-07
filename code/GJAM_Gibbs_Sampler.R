@@ -1,5 +1,5 @@
 GJAM_Gibbs_Sampler <- function(x, Y, r, N_stick, alpha0, posteriorDraws, burnInIterations){
-  
+  tic("Data generation:")
   # INPUT PARAMETERS
   n = nrow(Y) # number of sites
   S = ncol(Y) # number of species
@@ -49,7 +49,7 @@ GJAM_Gibbs_Sampler <- function(x, Y, r, N_stick, alpha0, posteriorDraws, burnInI
   
   nu = 1
   G = 1e3
-  sigmaeps2 <- 1e8
+  sigmaeps2 <- Inf
   
   pl = matrix(0,ncol = N_stick,nrow = S)
   
@@ -86,7 +86,8 @@ GJAM_Gibbs_Sampler <- function(x, Y, r, N_stick, alpha0, posteriorDraws, burnInI
   
   V = Y
   V_star = matrix(0,nrow = nrow(Y),ncol = ncol(Y))
-  
+  toc()
+  tic("GJAM R Gibbs Sampler:")
   # start of the Gibbs sampler
   for ( niter in 1:(posteriorDraws + burnInIterations) ) { # MCMC loop
     
@@ -188,6 +189,7 @@ GJAM_Gibbs_Sampler <- function(x, Y, r, N_stick, alpha0, posteriorDraws, burnInI
     list_sigmaeps2[[niter]] <- sigmaeps2
   } 
   # end of Gibbs sampler
+  toc()
   return(list(B = list_B, A = list_A, Z = list_Z, k = list_k, sigmaeps2 = list_sigmaeps2))
 }
 
