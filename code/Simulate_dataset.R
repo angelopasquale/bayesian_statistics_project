@@ -19,7 +19,7 @@ library(Rcpp)
 setwd("/Users/angelopasquale/Documents/University/LM/YEAR2/SEM1/BS/Project/implementation/gjam/")
 Rcpp::sourceCpp('src/cppFns.cpp') #in gjam sources
 
-simulation_fun<-function(Sp=20,nsamples=500, r=5, K_t=5){
+simulation_fun<-function(Sp=20,nsamples=6, r=5, K_t=5){
   S<-Sp
   n<- nsamples
   #iterations<-it
@@ -59,3 +59,7 @@ simulation_fun<-function(Sp=20,nsamples=500, r=5, K_t=5){
 }
 
 data<-simulation_fun()
+
+source(file = "/Users/angelopasquale/Documents/University/LM/YEAR2/SEM1/BS/Project/Bayesian_Statistics_Project/code/GJAM_Gibbs_Sampler.R")
+return_list <- GJAM_Gibbs_Sampler(data$Xdesign, data$Y, 5, 20, 1e2, 1e3, 1)
+

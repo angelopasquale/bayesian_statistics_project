@@ -13,6 +13,7 @@ GJAM_Gibbs_Sampler <- function(x, Y, r, N_stick, alpha0, posteriorDraws, burnInI
   list_A <- list()
   list_Z <- list()
   list_k <- list()
+  list_R <- list()
   list_sigmaeps2 <- list()
   
   # 3.A.2 for simulation of latent variable V
@@ -48,18 +49,15 @@ GJAM_Gibbs_Sampler <- function(x, Y, r, N_stick, alpha0, posteriorDraws, burnInI
   # need to transpose for the computation of Bx_i + Q(k)Zw_i'
   
   nu = 1
-  G = 1e3
-  sigmaeps2 <- Inf
-  
-  pl = matrix(0,ncol = N_stick,nrow = S)
-  
+  G = 1
+  sigmaeps2 <- 1
   
   muBeta = rep ( 0, times=n_cov ) # Prior mean of the beta coefficients
   sigmaBeta = diag ( n_cov ) # Prior variance-covariance matrix of the beta coefficients
   B <- matrix(data = 0, nrow = S, ncol = n_cov) # coefficient matrix
   
   for (j in seq(1,S,1)) {
-    B[j,] <- rmvnorm ( n = 1, mean = muBeta, sigma = 100*sigmaBeta )
+    B[j,] <- rmvnorm ( n = 1, mean = muBeta, sigma = 10*sigmaBeta )
   }
   sigmaB = 10
   
@@ -72,6 +70,7 @@ GJAM_Gibbs_Sampler <- function(x, Y, r, N_stick, alpha0, posteriorDraws, burnInI
   
   p <- numeric(N_stick)
   pl <- matrix(0, nrow = S, ncol = N_stick)
+  logpl <- matrix(0, nrow = S, ncol = N_stick)
   
   xi <- compute_GD_prior(N_stick,alpha0,k)
   # c <- 2
@@ -101,6 +100,11 @@ GJAM_Gibbs_Sampler <- function(x, Y, r, N_stick, alpha0, posteriorDraws, burnInI
       for (j in 1:N_stick) {
         pl[l,j] <- p[j] * exp( -1/(2*sigmaeps2) * norm_vec(V[,l] - x %*% B[l,] - W %*% Z[j,])^2)
       }
+      
+      logpl[l,] = log(pl[l,])
+      logpl[l,] = logpl[l,] - max(logpl[l,])
+      pl[l,] = exp(pl[l,])
+      pl[l,] = pl[l,] / sum(pl[l,])
       
       k[l] = sample(N_stick, size = 1, replace=TRUE, prob = pl[l,])
     }
@@ -157,7 +161,7 @@ GJAM_Gibbs_Sampler <- function(x, Y, r, N_stick, alpha0, posteriorDraws, burnInI
     # Step 7
     Sigma_star = A %*% t(A) + sigmaeps2 * diag(S)
     D = diag(diag(Sigma_star))
-    R = D^(1/2) %*% Sigma_star %*% solve(D)^(1/2)
+    R = solve(D)^(1/2) %*% Sigma_star %*% solve(D)^(1/2)
     B_star = D^(1/2) %*% B
     
     for (i in seq(1,n)) {
@@ -186,11 +190,12 @@ GJAM_Gibbs_Sampler <- function(x, Y, r, N_stick, alpha0, posteriorDraws, burnInI
     list_A[[niter]] <- A
     list_Z[[niter]] <- Z
     list_k[[niter]] <- k
+    list_R[[niter]] <- R
     list_sigmaeps2[[niter]] <- sigmaeps2
   } 
   # end of Gibbs sampler
   toc()
-  return(list(B = list_B, A = list_A, Z = list_Z, k = list_k, sigmaeps2 = list_sigmaeps2))
+  return(list(B = list_B, A = list_A, Z = list_Z, k = list_k, R = list_R, sigmaeps2 = list_sigmaeps2))
 }
 
 .tnorm <- function(n,lo,hi,mu,sig){   
