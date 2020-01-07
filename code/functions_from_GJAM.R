@@ -99,3 +99,22 @@ dmvnormRcpp
   z[z == -Inf] <- hi[z == -Inf] - tiny
   z
 }
+.tnormMVNmatrix <- function(avec, muvec, smat, 
+                            lo=matrix(-1000,nrow(muvec),ncol(muvec)), 
+                            hi=matrix(1000,nrow(muvec),ncol(muvec)),
+                            whichSample = c(1:nrow(smat))){
+  
+  #lo, hi must be same dimensions as muvec,avec
+  
+  lo[lo < -1000] <- -1000
+  hi[hi > 1000]  <- 1000
+  
+  if(max(whichSample) > length(muvec))
+    stop('whichSample outside length(muvec)')
+  
+  r <- avec
+  a <- trMVNmatrixRcpp(avec, muvec, smat, lo, hi, whichSample, 
+                       idxALL = c(0:(nrow(smat)-1)) )  
+  r[,whichSample] <- a[,whichSample]
+  r
+}
