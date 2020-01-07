@@ -6,16 +6,16 @@ library("devtools")
 library("MCMCpack")
 library("invgamma")
 library("MixMatrix")
-library("tmvtnorm")
+library("gdirmn")
 library(gjam)
 
 #### INPUT OF THE DATA ####
 
-n = 10 # number of sites
-S = 20 # number of species
+n = 5 # number of sites
+S = 10 # number of species
 n_cov = 5 # number of covariates (no intercept)
 
-f <- gjamSimData(n = n, S = S, Q = n_cov, typeNames = 'CA')
+f <- gjamSimData(n = n, S = S, Q = n_cov, typeNames = 'PA')
 # The object `f` includes elements needed to analyze the simulated data set.  
 # `f$typeNames` is a length-$S$ `character vector`. The `formula` follows 
 # standard R syntax. It does not start with `y ~`, because gjam is multivariate.
@@ -29,10 +29,9 @@ summary(f)
 x = as.matrix(f$xdata) # matrix of measured (environmental) covariates (n * k)
 Y = as.matrix(f$ydata) # matrix of n_species presence/absence data (in a continuous framework) (n * S)
 
+Y = Y_sim
 # 3.A.2 for simulation of latent variable V
-V = Y
-
-
+#V = Y
 
 #### CONSTRUCTION OF THE COVARIATES ####
 
@@ -71,21 +70,23 @@ nu = 1
 G = 1e3
 sigmaeps2 <- 1e4
 
+pl = matrix(0,ncol = N_stick,nrow = S)
+
+
 muBeta = rep ( 0, times=n_cov ) # Prior mean of the beta coefficients
 sigmaBeta = diag ( n_cov ) # Prior variance-covariance matrix of the beta coefficients
 B <- matrix(data = 0, nrow = S, ncol = n_cov) # coefficient matrix
 
-pl = matrix(0,ncol = N_stick,nrow = S)
-
 for (j in seq(1,S,1)) {
   B[j,] <- rmvnorm ( n = 1, mean = muBeta, sigma = 100*sigmaBeta )
 }
+sigmaB = 10
 
 cardinality_S = rep ( 0, times=N_stick )
 
 # Dirichlet process
 
-n_species = ncol ( V )
+n_species = S
 n_sites = n
 
 # each label belongs to {1,...,N_stick}
@@ -95,7 +96,7 @@ p <- numeric(N_stick)
 pl <- matrix(0, nrow = n_species, ncol = N_stick)
 
 # Number of iterations
-posteriorDraws = 1
+posteriorDraws = 5
 burnInIterations = 0
 
 alpha0 = 1e2 # Mass parameter of the Dirichlet process
@@ -131,6 +132,9 @@ p[N_stick] <- 1 - sum( p[1:N_stick-1] )
 k = sample(1:N_stick, size = n_species, replace=TRUE, prob = p)
 
 names(k) <- seq(1,n_species)
+
+V = Y
+V_star = matrix(0,nrow = nrow(Y),ncol = ncol(Y))
 
 # start of the Gibbs sampler
 for ( niter in 1:(posteriorDraws + burnInIterations) ) { # MCMC loop
@@ -194,21 +198,41 @@ for ( niter in 1:(posteriorDraws + burnInIterations) ) { # MCMC loop
   for (i in 1:n_sites) {
     dx = dx + norm_vec(V[i,] - B %*% x[i,] - A %*% W[i,])^2
   }
-  sigmaeps2 = invgamma::rinvgamma(1,shape = (n * S + nu)/2 + 1, scale = dx/2 + nu/G^2)
+  sigmaeps2 = invgamma::rinvgamma(1,shape = (n * S + nu)/2 + 1, rate = dx/2 + nu/G^2)
   #sigmaeps2 = 1
   
   # Step 6
   Dz = riwish(2 + r + N_stick - 1, t(Z) %*% Z + 4 * 1/eta_h * diag(r))
   
+  # Step 7
+  Sigma_star = A %*% t(A) + sigmaeps2 * diag(S)
+  D = diag(diag(Sigma_star))
+  R = D^(1/2) %*% Sigma_star %*% solve(D)^(1/2)
+  B_star = D^(1/2) %*% B
+  
+  for (i in seq(1,n)) {
+    for (j in seq(1,S)) {
+      
+      mean1 = as.vector(B_star[j,] %*% x[i,] + A[j,] %*% W[i,])
+      
+      if (Y[i,j] == 1){
+        V_star[i,j] <- .tnorm(1, 0, Inf, mean1, sigmaeps2) 
+      } else {
+        V_star[i,j] <- .tnorm(1, -Inf, 0, mean1, sigmaeps2) 
+      }
+    }
+  }
+  
+  V = V_star %*% solve(D)^(1/2)
+  
+  # Step 8
+  for (j in seq(1,S,1)) {
+    muBetaj = solve(1/sigmaB^2 * diag(n_cov) + 1/sigmaeps2 * t(x) %*% x) %*% t(x) %*% (V_star[,j] - W %*% A[j,]) * 1/sigmaeps2
+    sigmaBetaj = solve(1/(sigmaB^2) * diag(n_cov) + 1/sigmaeps2 * t(x) %*% x)
+    B[j,] <- rmvnorm ( n = 1, mean = muBetaj, sigma = sigmaBetaj )
+  }
 } 
 # end of Gibbs sampler
-
-V_sim = matrix(0,nrow = n_sites, ncol = n_species)
-for (i in seq(1,n_sites)) {
-  V_sim[i,] = rmvnorm ( n = 1, mean = B %*% x[i,] + A %*% W[i,], sigma = sigmaeps2 * diag(n_species) )
-}
-#print(V)
-#print(V_sim)
 
 print(A)
 print(k)
@@ -234,17 +258,4 @@ print(k)
   z[z == Inf]  <- lo[z == Inf] + tiny
   #z[z == -Inf] <- hi[z == -Inf] - tiny
   z
-}
-
-Sigma_star = A %*% t(A) + sigmaeps2 * diag(S)
-D = diag(diag(Sigma_star))
-R = D^(1/2) %*% Sigma_star %*% solve(D)^(1/2)
-B_star = D^(1/2) %*% B
-
-for (i in seq(1,n)) {
-  mean1 = as.vector(B_star %*% x[i,] + A %*% W[i,])
-  sigma1 = sigmaeps2 * diag(S)
-  lower1 = rep(0, length = length(mean1))
-  upper1 = rep(Inf, length = length(mean1))
-  V[i,] <- rtmvnorm(n = 1, mean = mean1, sigma = sigmaeps2 * diag(S), lower=lower1, upper=upper1, algorithm="gibbs", burn.in.samples=1000, thinning = 15) 
 }
