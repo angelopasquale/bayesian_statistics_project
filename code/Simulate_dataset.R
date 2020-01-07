@@ -16,9 +16,8 @@ library(arm)
 library(NLRoot)
 library(Rcpp)
 
-setwd("~/Phd/Master/Code/gjam 4")
+setwd("/Users/angelopasquale/Documents/University/LM/YEAR2/SEM1/BS/Project/implementation/gjam/")
 Rcpp::sourceCpp('src/cppFns.cpp') #in gjam sources
-
 
 simulation_fun<-function(Sp=20,nsamples=500, r=5, K_t=5){
   S<-Sp
