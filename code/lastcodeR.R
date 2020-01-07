@@ -5,14 +5,15 @@ library("devtools")
 #install_github("cran/MCMCpack")#, for inverse wishart, but just for the moment
 library("MCMCpack")
 library("invgamma")
-#library("gdirmn")
+library("MixMatrix")
+library("tmvtnorm")
 library(gjam)
 
 #### INPUT OF THE DATA ####
 
 n = 10 # number of sites
 S = 20 # number of species
-n_cov = 10 # number of covariates (no intercept)
+n_cov = 5 # number of covariates (no intercept)
 
 f <- gjamSimData(n = n, S = S, Q = n_cov, typeNames = 'CA')
 # The object `f` includes elements needed to analyze the simulated data set.  
@@ -30,9 +31,6 @@ Y = as.matrix(f$ydata) # matrix of n_species presence/absence data (in a continu
 
 # 3.A.2 for simulation of latent variable V
 V = Y
-
-
-
 
 
 
@@ -217,3 +215,36 @@ print(k)
 
 #check of conformity
 
+.tnorm <- function(n,lo,hi,mu,sig){   
+  
+  #normal truncated lo and hi
+  
+  tiny <- 10e-6
+  
+  if(length(lo) == 1 & length(mu) > 1)lo <- rep(lo,length(mu))
+  if(length(hi) == 1 & length(mu) > 1)hi <- rep(hi,length(mu))
+  
+  q1 <- pnorm(lo,mu,sig)
+  q2 <- pnorm(hi,mu,sig) 
+  
+  z <- runif(n,q1,q2)
+  z <- qnorm(z,mu,sig)
+  print(z)
+  
+  z[z == Inf]  <- lo[z == Inf] + tiny
+  #z[z == -Inf] <- hi[z == -Inf] - tiny
+  z
+}
+
+Sigma_star = A %*% t(A) + sigmaeps2 * diag(S)
+D = diag(diag(Sigma_star))
+R = D^(1/2) %*% Sigma_star %*% solve(D)^(1/2)
+B_star = D^(1/2) %*% B
+
+for (i in seq(1,n)) {
+  mean1 = as.vector(B_star %*% x[i,] + A %*% W[i,])
+  sigma1 = sigmaeps2 * diag(S)
+  lower1 = rep(0, length = length(mean1))
+  upper1 = rep(Inf, length = length(mean1))
+  V[i,] <- rtmvnorm(n = 1, mean = mean1, sigma = sigmaeps2 * diag(S), lower=lower1, upper=upper1, algorithm="gibbs", burn.in.samples=1000, thinning = 15) 
+}
