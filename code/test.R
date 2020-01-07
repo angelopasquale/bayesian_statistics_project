@@ -51,3 +51,19 @@ return_list <- GJAM_Gibbs_Sampler(x, Y, r, N_stick, alpha_0, posteriorDraws, bur
 # 
 
 # 1. ANALISI DELLA CONVERGENZA CATENE 
+# plot del numero di clusters in funzione di alpha
+number_of_clusters=c()
+count=1
+alpha=c(1e-3, 1e-2, 1e-1, 1e-0, 1e1, 20, 30, 40, 50, 60, 70, 80, 90, 100)
+for(i in alpha){
+  alpha_0=abs(i)
+  return_list <- GJAM_Gibbs_Sampler(x, Y, r, N_stick, alpha_0, posteriorDraws, burnInIterations)
+  number_of_clusters[count]=length(unique((return_list$k[[1]])))
+  count=count+1
+}
+par(family = "LM Roman 10")
+
+plot(alpha, number_of_clusters)
+
+
+
