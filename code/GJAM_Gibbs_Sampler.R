@@ -85,7 +85,10 @@ GJAM_Gibbs_Sampler <- function(x, Y, r, N_stick, alpha0, posteriorDraws, burnInI
   
   V = Y
   V_star = matrix(0,nrow = nrow(Y),ncol = ncol(Y))
+  
+  S_Dz = matrix(0, nrow = r, ncol = r)
   toc()
+  
   tic("GJAM R Gibbs Sampler:")
   # start of the Gibbs sampler
   for ( niter in 1:(posteriorDraws + burnInIterations) ) { # MCMC loop
@@ -134,6 +137,13 @@ GJAM_Gibbs_Sampler <- function(x, Y, r, N_stick, alpha0, posteriorDraws, burnInI
           }
           Q[l,k[l]] = 1
         }
+        # Sigma_Zj <- Sigma_Zj + diag(ncol(Sigma_Zj))*0.01
+        Sigma_Zj <- make.positive.definite(Sigma_Zj, tol=1e-3)
+        # because of machine precision the matrix could seem to be not positive definite:
+        # we overcome this by making sure your det(Sigma_Zj) returns a positive 
+        # value. One way is to add some variance in all directions:
+        Sigma_Zj[lower.tri(Sigma_Zj)] = t(Sigma_Zj)[lower.tri(Sigma_Zj)]
+        # because of machine precision the matrix doesn't seem symmetric
         Z[j,] = rmvnorm ( n = 1, mean = mu_Zj, sigma = Sigma_Zj )
       }
     }
@@ -143,7 +153,14 @@ GJAM_Gibbs_Sampler <- function(x, Y, r, N_stick, alpha0, posteriorDraws, burnInI
     # Step 2
     for ( i in 1:n ) {
       Sigma_W = solve(1/sigmaeps2 * t(A) %*% A + diag(r))
-      mu_W = 1/sigmaeps2 * Sigma_W %*% t(A) %*% (t(t(V[i,])) - B %*% x[i,])
+      mu_W = 1/sigmaeps2 * Sigma_W %*% A %*% (t(t(V[i,])) - B %*% x[i,])
+      #Sigma_W <- Sigma_W + diag(ncol(Sigma_W))*0.01
+      Sigma_W <- make.positive.definite(Sigma_W, tol=1e-3)
+      # make.positive.definite finds the closest positive definite matrix using the
+      # algorithm of NJ Higham
+      # we can find an implemented version in Rcpp here:
+      # https://stackoverflow.com/questions/51490499/results-for-calculating-nearest-positive-definite-matrix-are-different-in-r-func
+      Sigma_W[lower.tri(Sigma_W)] = t(Sigma_W)[lower.tri(Sigma_W)]
       W[i,] = rmvnorm ( n = 1, mean = mu_W, sigma = Sigma_W )
     }
     
@@ -156,7 +173,11 @@ GJAM_Gibbs_Sampler <- function(x, Y, r, N_stick, alpha0, posteriorDraws, burnInI
     #sigmaeps2 = 1
     
     # Step 6
-    Dz = riwish(2 + r + N_stick - 1, t(Z) %*% Z + 4 * 1/eta_h * diag(r))
+    S_Dz <- t(Z) %*% Z + 4 * 1/eta_h * diag(r)
+    # S_Dz <- S_Dz + diag(ncol(S_Dz))*0.01
+    S_Dz <- make.positive.definite(S_Dz, tol=1e-3)
+    S_Dz[lower.tri(S_Dz)] = t(S_Dz)[lower.tri(S_Dz)]
+    Dz = riwish(2 + r + N_stick - 1, S_Dz)
     
     # Step 7
     Sigma_star = A %*% t(A) + sigmaeps2 * diag(S)
@@ -181,8 +202,11 @@ GJAM_Gibbs_Sampler <- function(x, Y, r, N_stick, alpha0, posteriorDraws, burnInI
     
     # Step 8
     for (j in seq(1,S,1)) {
-      muBetaj = solve(1/sigmaB^2 * diag(n_cov) + 1/sigmaeps2 * t(x) %*% x) %*% t(x) %*% (V_star[,j] - W %*% A[j,]) * 1/sigmaeps2
+      muBetaj = solve(1/(sigmaB)^2 * diag(n_cov) + 1/sigmaeps2 * t(x) %*% x) %*% t(x) %*% (V_star[,j] - W %*% A[j,]) * 1/sigmaeps2
       sigmaBetaj = solve(1/(sigmaB^2) * diag(n_cov) + 1/sigmaeps2 * t(x) %*% x)
+      # sigmaBetaj <- sigmaBetaj + diag(ncol(sigmaBetaj))*0.01
+      sigmaBetaj <- make.positive.definite(sigmaBetaj, tol=1e-3)
+      sigmaBetaj[lower.tri(sigmaBetaj)] = t(sigmaBetaj)[lower.tri(sigmaBetaj)]
       B[j,] <- rmvnorm ( n = 1, mean = muBetaj, sigma = sigmaBetaj )
     }
     

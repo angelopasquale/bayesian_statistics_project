@@ -15,11 +15,21 @@ library(RcppArmadillo)
 library(arm)
 library(NLRoot)
 library(Rcpp)
+library(tictoc)
+library(corpcor) # for make positive definite
+
+library("mvtnorm")
+library("matlib")
+library("devtools")
+#install_github("cran/MCMCpack")#, for inverse wishart, but just for the moment
+library("MCMCpack")
+library("invgamma")
+library("MixMatrix")
 
 setwd("/Users/angelopasquale/Documents/University/LM/YEAR2/SEM1/BS/Project/implementation/gjam/")
 Rcpp::sourceCpp('src/cppFns.cpp') #in gjam sources
 
-simulation_fun<-function(Sp=20,nsamples=6, r=5, K_t=5){
+simulation_fun<-function(Sp=5,nsamples=10, r=5, K_t=5){
   S<-Sp
   n<- nsamples
   #iterations<-it

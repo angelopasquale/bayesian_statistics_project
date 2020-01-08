@@ -7,9 +7,9 @@ library("devtools")
 library("MCMCpack")
 library("invgamma")
 library("MixMatrix")
-library("gdirmn")
 library(gjam)
 library(tictoc)
+library(corpcor) # for make positive definite
 
 n = 15
 S = 20
