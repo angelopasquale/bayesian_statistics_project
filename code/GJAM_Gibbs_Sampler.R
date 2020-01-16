@@ -224,7 +224,7 @@ GJAM_Gibbs_Sampler <- function(x, Y, r, N_stick, alpha0, posteriorDraws, burnInI
 
 .tnorm <- function(n,lo,hi,mu,sig){   
   
-  #normal truncated lo and hi
+  #normal truncated lo and hi .  
   
   tiny <- 10e-6
   
