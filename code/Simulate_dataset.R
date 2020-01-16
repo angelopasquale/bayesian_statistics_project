@@ -35,7 +35,7 @@ library("MixMatrix")
 setwd("/Users/angelopasquale/Documents/University/LM/YEAR2/SEM1/BS/Project/implementation/gjam/")
 Rcpp::sourceCpp('src/cppFns.cpp') #in gjam sources
 
-simulation_fun<-function(Sp=5,nsamples=10, r=5, K_t=6){
+simulation_fun<-function(Sp=5,nsamples=500, r=5, K_t=40){
   S<-Sp
   n<- nsamples
   #iterations<-it
@@ -78,5 +78,7 @@ simulation_fun<-function(Sp=5,nsamples=10, r=5, K_t=6){
 data<-simulation_fun()
 
 source(file = "/Users/angelopasquale/Documents/University/LM/YEAR2/SEM1/BS/Project/Bayesian_Statistics_Project/code/GJAM_Gibbs_Sampler.R")
-return_list <- GJAM_Gibbs_Sampler(data$Xdesign, data$Y, 5, 20, 1e2, 1e3, 1)
+return_list <- GJAM_Gibbs_Sampler(data$Xdesign, data$Y, 5, 40, 1e0, 1e3, 1)
 
+Q <- apply(simplify2array(return_list$B), 1:2, quantile, prob = c(0.05, 0.95))
+M <- apply(simplify2array(return_list$B), 1:2, mean)

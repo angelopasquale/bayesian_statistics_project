@@ -52,9 +52,9 @@ GJAM_Gibbs_Sampler <- function(x, Y, r, N_stick, alpha0, posteriorDraws, burnInI
   W <- rmvnormRcpp ( n = n, mu = rep(0, times = r), sigma = diag(r) ) 
   # need to transpose for the computation of Bx_i + Q(k)Zw_i'
   
-  nu = 1
+  nu = 0
   G = 1
-  sigmaeps2 <- 1e2
+  sigmaeps2 <- 1e-2
   
   muBeta = rep ( 0, times=n_cov ) # Prior mean of the beta coefficients
   sigmaBeta = diag ( n_cov ) # Prior variance-covariance matrix of the beta coefficients
@@ -177,7 +177,7 @@ GJAM_Gibbs_Sampler <- function(x, Y, r, N_stick, alpha0, posteriorDraws, burnInI
     # Step 2 : TO CHECK, and CAREFULLY !!!!!!!!!
     for ( i in 1:n ) {
       Sigma_W = solveRcpp(1/sigmaeps2 * t(A) %*% A + diag(r))
-      mu_W = 1/sigmaeps2 * Sigma_W %*% A %*% (t(t(V[i,])) - B %*% x[i,])
+      mu_W = 1/sigmaeps2 * Sigma_W %*% t(A) %*% (t(t(V[i,])) - B %*% x[i,])
       #Sigma_W <- Sigma_W + diag(ncol(Sigma_W))*0.01
       Sigma_W <- make.positive.definite(Sigma_W, tol=1e-3)
       # make.positive.definite finds the closest positive definite matrix using the
@@ -189,11 +189,27 @@ GJAM_Gibbs_Sampler <- function(x, Y, r, N_stick, alpha0, posteriorDraws, burnInI
     }
     
     # Step 5
+    
+    # nn   <- nrow(x)
+    # pp    <- ncol(x)
+    # SS    <- ncol(V)
+    # ntot <- nrow(V)
+    # 
+    # covR <- solveRcpp( (1/sigmaeps2)*crossprod(Z[k,]) + diag(r) ) # Sigma_W
+    # z1   <- crossprod( Z[k,]/sigmaeps2,t(Y - x %*% t(B) ))        
+    # RR   <- rmvnormRcpp(ntot, mu = rep(0,r), sigma = covR ) + t(crossprod( covR,z1))
+    # 
+    # rndEff <- RR%*%t(Z[k,])
+    # 
+    # res        <- sum((V - x %*% t(B) - rndEff )^2)
+    # sigmaeps2 <- 1/rgamma(1,shape=(SS*nn + 1)/2, rate=res/2)  
+    # print(sigmaeps2)
+    
     dx = c(0)
     for (i in 1:n) {
       dx = dx + norm_vec(V[i,] - B %*% x[i,] - A %*% W[i,])^2
     }
-    sigmaeps2 = 1/rgamma(1,shape = (n * S + nu)/2 + 1, rate = dx/2 + nu/G^2)
+    sigmaeps2 = 1/rgamma(1,shape = (n * S + nu)/2, rate = dx/2 + nu/G^2)
     #sigmaeps2 = 1
     
     # Step 6
@@ -206,26 +222,37 @@ GJAM_Gibbs_Sampler <- function(x, Y, r, N_stick, alpha0, posteriorDraws, burnInI
     #S_Dz[lower.tri(S_Dz)] = t(S_Dz)[lower.tri(S_Dz)]
     Dz = .riwish(df = 2 + r + N_stick - 1, S = S_Dz)
     
+    # 
     # Step 7 : TO CHECK, and REALLY CAREFULLY !!!!!!!!!
     Sigma_star = A %*% t(A) + sigmaeps2 * diag(S)
     D = diag(diag(Sigma_star))
     R = solveRcpp(D)^(1/2) %*% Sigma_star %*% solveRcpp(D)^(1/2)
-    B_star = D^(1/2) %*% B
-    
+    B_star = solveRcpp(D)^(1/2) %*% B
+
     for (i in seq(1,n)) {
       for (j in seq(1,S)) {
-        
+
         mean1 = as.vector(B_star[j,] %*% x[i,] + A[j,] %*% W[i,])
-        
+
         if (Y[i,j] == 1){
-          V_star[i,j] <- .tnorm(1, 0, Inf, mean1, sigmaeps2) 
+          V_star[i,j] <- .tnorm(1, 0, Inf, mean1, sigmaeps2)
         } else {
-          V_star[i,j] <- .tnorm(1, -Inf, 0, mean1, sigmaeps2) 
+          V_star[i,j] <- .tnorm(1, -Inf, 0, mean1, sigmaeps2)
         }
       }
     }
-    
+
     V = V_star %*% solveRcpp(D)^(1/2)
+
+    
+    # L<-x%*%t(B) #We create the mean by multiplying B with the design matrix X
+    # 
+    # Sigma_star <-A%*%t(A)+sigmaeps2*diag(S) #We obtain Sigma. Here sigma_epsilon^2 is 0.1
+    # 
+    # 
+    # #We obtain the correlation matrix R
+    # B_star =cov2cor(Sigma_star) 
+    # V<-L+rmvnormRcpp(n = n, mu=rep(0,S), sigma=B_star)
     
     # Step 8 : TO CHECK, and REALLY CAREFULLY !!!!!!!!!
     for (j in seq(1,S,1)) {
@@ -234,8 +261,10 @@ GJAM_Gibbs_Sampler <- function(x, Y, r, N_stick, alpha0, posteriorDraws, burnInI
       # sigmaBetaj <- sigmaBetaj + diag(ncol(sigmaBetaj))*0.01
       sigmaBetaj <- make.positive.definite(sigmaBetaj, tol=1e-3)
       sigmaBetaj[lower.tri(sigmaBetaj)] = t(sigmaBetaj)[lower.tri(sigmaBetaj)]
-      B[j,] <- rmvnormRcpp ( n = 1, mu = muBetaj, sigma = sigmaBetaj )
+      B_star[j,] <- rmvnormRcpp ( n = 1, mu = muBetaj, sigma = sigmaBetaj )
     }
+    
+    B = solveRcpp(D)^(1/2) %*% B_star; 
     
     list_B[[niter]] <- B
     list_A[[niter]] <- A
@@ -251,7 +280,7 @@ GJAM_Gibbs_Sampler <- function(x, Y, r, N_stick, alpha0, posteriorDraws, burnInI
 
 .tnorm <- function(n,lo,hi,mu,sig){   
   
-  #normal truncated lo and hi .  
+  #normal truncated lo and hi
   
   tiny <- 10e-6
   
