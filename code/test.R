@@ -1,5 +1,11 @@
 rm ( list = ls() )
 setwd("/Users/angelopasquale/Documents/University/LM/YEAR2/SEM1/BS/Project/Bayesian_Statistics_Project/code")
+
+needed_packages <- c("mvtnorm", "matlib", "devtools", "MCMCpack", "invgamma", "MixMatrix", "tictoc", "corpcor") 
+new_packages <- needed_packages[!(needed_packages %in% installed.packages()[, "Package"])] 
+if (length(new_packages)) install.packages(new_packages) 
+lapply(needed_packages, require, character.only = TRUE) 
+
 library("mvtnorm")
 library("matlib")
 library("devtools")

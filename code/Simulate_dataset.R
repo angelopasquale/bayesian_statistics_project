@@ -15,6 +15,12 @@ library(RcppArmadillo)
 library(arm)
 library(NLRoot)
 library(Rcpp)
+
+needed_packages <- c("mvtnorm", "matlib", "devtools", "MCMCpack", "invgamma", "MixMatrix", "tictoc", "corpcor") 
+new_packages <- needed_packages[!(needed_packages %in% installed.packages()[, "Package"])] 
+if (length(new_packages)) install.packages(new_packages) 
+lapply(needed_packages, require, character.only = TRUE) 
+
 library(tictoc)
 library(corpcor) # for make positive definite
 
@@ -29,7 +35,7 @@ library("MixMatrix")
 setwd("/Users/angelopasquale/Documents/University/LM/YEAR2/SEM1/BS/Project/implementation/gjam/")
 Rcpp::sourceCpp('src/cppFns.cpp') #in gjam sources
 
-simulation_fun<-function(Sp=5,nsamples=10, r=5, K_t=5){
+simulation_fun<-function(Sp=5,nsamples=10, r=5, K_t=6){
   S<-Sp
   n<- nsamples
   #iterations<-it
@@ -40,6 +46,7 @@ simulation_fun<-function(Sp=5,nsamples=10, r=5, K_t=5){
   #create the coefficient matrix B (Sx2)
   idx<-sample(S)
   B_0<-scale(seq(0,100,length.out=S)[idx]) #intercept
+  idx<-sample(S)
   B_1<-scale(seq(0,100,length.out=S)[idx]) #covariate coefficient
   B<-cbind(B_0,B_1) #Coefficient matrix
   L<-X%*%t(B) #We create the mean by multiplying B with the design matrix X
