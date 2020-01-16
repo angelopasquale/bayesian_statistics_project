@@ -5,7 +5,7 @@ using namespace Rcpp;
 using namespace arma;
 
 // [[Rcpp::depends(RcppArmadillo)]]
-// [[Rcpp::export]]
+// [[Rcpp::export]] 
 double tnormRcpp(double lo, double hi, double mu, double sig){
 
   double q1, q2, z;
