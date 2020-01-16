@@ -156,6 +156,8 @@ GJAM_Gibbs_Sampler <- function(x, Y, r, N_stick, alpha0, posteriorDraws, burnInI
     Z    <- fnZRcpp(kk=k, Yk=V, Xk=x, Dk=Dz, Bk=B, 
                     Wk=RR, sigmasqk=sigmaeps2, Nz=N_stick)
     
+    A = Z[k,]
+    
     # Our CODE in R 
     # for ( j in 1:N_stick ) { 
     #   
@@ -188,8 +190,7 @@ GJAM_Gibbs_Sampler <- function(x, Y, r, N_stick, alpha0, posteriorDraws, burnInI
     #     Z[j,] = rmvnormRcpp ( n = 1, mu = mu_Zj, sigma = Sigma_Zj )
     #   }
     # }
-    
-    A = Q %*% Z # in R, todo in Rcpp?
+    # A = Q %*% Z # in R, todo in Rcpp?
     
     # Step 2 : TO CHECK, and CAREFULLY !!!!!!!!!
     for ( i in 1:n ) {  # cycle in R, todo in Rcpp?
