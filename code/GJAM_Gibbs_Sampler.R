@@ -38,9 +38,9 @@ GJAM_Gibbs_Sampler <- function(x, Y, r, N_stick, alpha0, posteriorDraws, burnInI
   # r = number of latent factors, user chosen
   #eta_h = rep ( 0, times=r )
   
-  eta_h <- 1/rgamma(r, shape = 1/2, rate = 1/(10^4))
+  eta_h <- 1/rgamma(r, shape = 1/2, rate = 1/(10^4)) # R
   
-  Dz <- .riwish(2 + r - 1, 4 * 1/eta_h * diag(r)) 
+  Dz <- .riwish(2 + r - 1, 4 * 1/eta_h * diag(r)) # RCPP
   
   #Z <- rmvnorm ( n = N_stick, mean = rep(0, times = r), sigma = Dz ) 
   
@@ -102,7 +102,7 @@ GJAM_Gibbs_Sampler <- function(x, Y, r, N_stick, alpha0, posteriorDraws, burnInI
     Z <- matrix(data = 0, nrow = N_stick, ncol = r) 
     Q <- matrix(data = 0, nrow = S, ncol = N_stick) 
     
-    # Step 3
+    # Step 3 -> RCPP
     
     # OUR CODE 
     # for ( l in 1:S ) { # Loop on species
@@ -124,6 +124,7 @@ GJAM_Gibbs_Sampler <- function(x, Y, r, N_stick, alpha0, posteriorDraws, burnInI
     # and then the vector of labels k
     k <- unlist( apply(pl, 1, function(x)sample(1:N_stick, size=1, prob=x)) )
     
+    # Step 4 -> R
     # RESAMPLE p|k
     # OUR CODE
     # xi <- compute_GD_prior(N_stick,alpha0,k)
@@ -136,46 +137,62 @@ GJAM_Gibbs_Sampler <- function(x, Y, r, N_stick, alpha0, posteriorDraws, burnInI
     p <- .sampleP(N = N_stick, avec = rep(alpha0/N_stick,(N_stick-1)),
                      bvec = ((N_stick-1):1)*alpha0/N_stick, K = k) 
     
-    cardinality_S = rep(0, times = N_stick)
+    #cardinality_S = rep(0, times = N_stick)
     
-    names(cardinality_S) = seq(1,N_stick)
+    #names(cardinality_S) = seq(1,N_stick)
     
-    for ( j in 1:N_stick ) { 
-      
-      # Step 1 : TO CHECK, and CAREFULLY !!!!!!!!!
-      if (!(j %in% k)) {
-        #print('entered if')
-        Z[j,] = rmvnormRcpp ( n = 1, mu = rep(0, times = r), sigma = Dz )
-        cardinality_S[j] = 1
-      } 
-      else { # if j in k
-        #print('entered else')
-        cardinality_S[j] = sum(j==k)
-        #print(paste('cardinality',cardinality_S[j]))
-        Sigma_Zj = solveRcpp(cardinality_S[j]/sigmaeps2 * t(W) %*% W + solveRcpp(Dz) )
-        mu_Zj = c(0)
-        for (l in 1:S) {
-          if (k[l] == j){
-            #print('entered else-if')
-            mu_Zj = mu_Zj + 1/sigmaeps2 * Sigma_Zj %*% t(W) %*% ( t(t(V[,l])) - x %*% B[l,] )
-          }
-          Q[l,k[l]] = 1
-        }
-        # Sigma_Zj <- Sigma_Zj + diag(ncol(Sigma_Zj))*0.01
-        Sigma_Zj <- make.positive.definite(Sigma_Zj, tol=1e-3)
-        # because of machine precision the matrix could seem to be not positive definite:
-        # we overcome this by making sure your det(Sigma_Zj) returns a positive 
-        # value. One way is to add some variance in all directions:
-        Sigma_Zj[lower.tri(Sigma_Zj)] = t(Sigma_Zj)[lower.tri(Sigma_Zj)]
-        # because of machine precision the matrix doesn't seem symmetric
-        Z[j,] = rmvnormRcpp ( n = 1, mu = mu_Zj, sigma = Sigma_Zj )
-      }
-    }
+    # Step 1
     
-    A = Q %*% Z
+    nn   <- nrow(x)
+    pp    <- ncol(x)
+    SS    <- ncol(V)
+    ntot <- nrow(V)
+
+    covR <- solveRcpp( (1/sigmaeps2)*crossprod(Z[k,]) + diag(r) ) # Sigma_W
+    z1   <- crossprod( Z[k,]/sigmaeps2,t(Y - x %*% t(B) ))
+    RR   <- rmvnormRcpp(ntot, mu = rep(0,r), sigma = covR ) + t(crossprod( covR,z1))
+    
+    D    <- .riwish(df = (2 + r + N_stick - 1), S = (crossprod(Z) + 2*2*diag(1/eta_h)))
+    Z    <- fnZRcpp(kk=k, Yk=V, Xk=x, Dk=Dz, Bk=B, 
+                    Wk=RR, sigmasqk=sigmaeps2, Nz=N_stick)
+    
+    # Our CODE in R 
+    # for ( j in 1:N_stick ) { 
+    #   
+    #   # Step 1 : TO CHECK, and CAREFULLY !!!!!!!!!
+    #   if (!(j %in% k)) {
+    #     #print('entered if')
+    #     Z[j,] = rmvnormRcpp ( n = 1, mu = rep(0, times = r), sigma = Dz )
+    #     cardinality_S[j] = 1
+    #   } 
+    #   else { # if j in k
+    #     #print('entered else')
+    #     cardinality_S[j] = sum(j==k)
+    #     #print(paste('cardinality',cardinality_S[j]))
+    #     Sigma_Zj = solveRcpp(cardinality_S[j]/sigmaeps2 * t(W) %*% W + solveRcpp(Dz) )
+    #     mu_Zj = c(0)
+    #     for (l in 1:S) {
+    #       if (k[l] == j){
+    #         #print('entered else-if')
+    #         mu_Zj = mu_Zj + 1/sigmaeps2 * Sigma_Zj %*% t(W) %*% ( t(t(V[,l])) - x %*% B[l,] )
+    #       }
+    #       Q[l,k[l]] = 1
+    #     }
+    #     # Sigma_Zj <- Sigma_Zj + diag(ncol(Sigma_Zj))*0.01
+    #     Sigma_Zj <- make.positive.definite(Sigma_Zj, tol=1e-3)
+    #     # because of machine precision the matrix could seem to be not positive definite:
+    #     # we overcome this by making sure your det(Sigma_Zj) returns a positive 
+    #     # value. One way is to add some variance in all directions:
+    #     Sigma_Zj[lower.tri(Sigma_Zj)] = t(Sigma_Zj)[lower.tri(Sigma_Zj)]
+    #     # because of machine precision the matrix doesn't seem symmetric
+    #     Z[j,] = rmvnormRcpp ( n = 1, mu = mu_Zj, sigma = Sigma_Zj )
+    #   }
+    # }
+    
+    A = Q %*% Z # in R, todo in Rcpp?
     
     # Step 2 : TO CHECK, and CAREFULLY !!!!!!!!!
-    for ( i in 1:n ) {
+    for ( i in 1:n ) {  # cycle in R, todo in Rcpp?
       Sigma_W = solveRcpp(1/sigmaeps2 * t(A) %*% A + diag(r))
       mu_W = 1/sigmaeps2 * Sigma_W %*% t(A) %*% (t(t(V[i,])) - B %*% x[i,])
       #Sigma_W <- Sigma_W + diag(ncol(Sigma_W))*0.01
@@ -188,7 +205,7 @@ GJAM_Gibbs_Sampler <- function(x, Y, r, N_stick, alpha0, posteriorDraws, burnInI
       W[i,] = rmvnormRcpp ( n = 1, mu = mu_W, sigma = Sigma_W )
     }
     
-    # Step 5
+    # Step 5 in R, todo in Rcpp
     
     # nn   <- nrow(x)
     # pp    <- ncol(x)
@@ -212,7 +229,7 @@ GJAM_Gibbs_Sampler <- function(x, Y, r, N_stick, alpha0, posteriorDraws, burnInI
     sigmaeps2 = 1/rgamma(1,shape = (n * S + nu)/2, rate = dx/2 + nu/G^2)
     #sigmaeps2 = 1
     
-    # Step 6
+    # Step 6 in R
     eta_h <- 1/rgamma(r, shape = (2 + r )/2, 
                       rate = ((1/1000000) + 2*diag(solveRcpp(Dz)) ) )
     
@@ -223,7 +240,7 @@ GJAM_Gibbs_Sampler <- function(x, Y, r, N_stick, alpha0, posteriorDraws, burnInI
     Dz = .riwish(df = 2 + r + N_stick - 1, S = S_Dz)
     
     # 
-    # Step 7 : TO CHECK, and REALLY CAREFULLY !!!!!!!!!
+    # Step 7 : TO CHECK, and REALLY CAREFULLY !!!!!!!!! in R, todo Rcpp?
     Sigma_star = A %*% t(A) + sigmaeps2 * diag(S)
     D = diag(diag(Sigma_star))
     R = solveRcpp(D)^(1/2) %*% Sigma_star %*% solveRcpp(D)^(1/2)
@@ -254,7 +271,7 @@ GJAM_Gibbs_Sampler <- function(x, Y, r, N_stick, alpha0, posteriorDraws, burnInI
     # B_star =cov2cor(Sigma_star) 
     # V<-L+rmvnormRcpp(n = n, mu=rep(0,S), sigma=B_star)
     
-    # Step 8 : TO CHECK, and REALLY CAREFULLY !!!!!!!!!
+    # Step 8 : TO CHECK, and REALLY CAREFULLY !!!!!!!!! to do in Rcpp?
     for (j in seq(1,S,1)) {
       muBetaj = solveRcpp(1/(sigmaB)^2 * diag(n_cov) + 1/sigmaeps2 * t(x) %*% x) %*% t(x) %*% (V_star[,j] - W %*% A[j,]) * 1/sigmaeps2
       sigmaBetaj = solveRcpp(1/(sigmaB^2) * diag(n_cov) + 1/sigmaeps2 * t(x) %*% x)
