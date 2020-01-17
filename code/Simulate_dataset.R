@@ -77,8 +77,8 @@ simulation_fun<-function(Sp=5,nsamples=400, r=6, K_t=40){
 
 data<-simulation_fun()
 
-source(file = "/Users/angelopasquale/Documents/University/LM/YEAR2/SEM1/BS/Project/Bayesian_Statistics_Project/code/GJAM_Gibbs_Sampler.R")
-return_list <- GJAM_Gibbs_Sampler(data$Xdesign, data$Y, 6, 40, 1e1, 1e3, 1)
+source(file = "/Users/angelopasquale/Documents/University/LM/YEAR2/SEM1/BS/Project/Bayesian_Statistics_Project/code/GJAM_Gibbs_Sampler_Rcpp.R")
+return_list <- GJAM_Gibbs_Sampler_Rcpp(data$Xdesign, data$Y, 6, 40, 1e1, 1e3, 1)
 
 Q <- apply(simplify2array(return_list$B), 1:2, quantile, prob = c(0.05, 0.95))
 M <- apply(simplify2array(return_list$B), 1:2, mean)
