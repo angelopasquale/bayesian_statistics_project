@@ -77,8 +77,8 @@ simulation_fun<-function(Sp=15,nsamples=400, r=6, K_t=4){
 
 data<-simulation_fun()
 
-source(file = "/Users/angelopasquale/Documents/University/LM/YEAR2/SEM1/BS/Project/Bayesian_Statistics_Project/code/GJAM_Gibbs_Sampler_Rcpp.R")
-return_list <- GJAM_Gibbs_Sampler_Rcpp(data$Xdesign, data$Y, 6, 80, 1e-1, 1e1, 1)
+source(file = "/Users/angelopasquale/Documents/University/LM/YEAR2/SEM1/BS/Project/Bayesian_Statistics_Project/code/GJAM_Gibbs_Sampler.R")
+return_list <- GJAM_Gibbs_Sampler(data$Xdesign, data$Y, 6, 80, 5, 1e1, 1)
 
 B = return_list$B
 
@@ -109,14 +109,25 @@ M <- apply(simplify2array(return_list$B), 1:2, mean)
 
 library(gjam)
 
-f <- gjamSimData(n = 50, S = 5, Q = 4, typeNames = 'PA')
+f <- gjamSimData(n = 500, S = 5, Q = 4, typeNames = 'PA')
 
 source(file = "/Users/angelopasquale/Documents/University/LM/YEAR2/SEM1/BS/Project/Bayesian_Statistics_Project/code/gjam.R")
 
-rl   <- list(r = 8, N = 4)
-ml   <- list(ng = 1000, burnin = 500, typeNames = 'PA', reductList = rl)
+rl   <- list(r = 3, N = 4)
+ml   <- list(ng = 3000, burnin = 500, typeNames = 'PA', reductList = rl)
 
 out  <- .gjamReduct(f$formula, xdata = f$xdata, ydata = f$ydata, modelList = ml)
+
+out$parameters$betaMu         # S by M coefficient matrix alpha
+out$parameters$betaStandXmu   # S by M standardized for X
+out$parameters$betaStandXWmu  # (S-F) by M standardized for W/X, centered factors
+
+out$parameters$betaTable        # SM by stats posterior summary
+out$parameters$betaStandXtable  # SM by stats posterior summary
+out$parameters$betaStandXWtable # (S-F)M by stats posterior summary
+
+out$parameters$sigMu         # S by S covariance matrix omega
+out$parameters$sigSe         # S by S covariance std errors
 
 pl  <- list(trueValues = f$trueValues, GRIDPLOTS = T)
 gjamPlot(output = out, plotPars = pl)
