@@ -80,6 +80,30 @@ data<-simulation_fun()
 source(file = "/Users/angelopasquale/Documents/University/LM/YEAR2/SEM1/BS/Project/Bayesian_Statistics_Project/code/GJAM_Gibbs_Sampler_Rcpp.R")
 return_list <- GJAM_Gibbs_Sampler_Rcpp(data$Xdesign, data$Y, 6, 80, 1e-1, 1e1, 1)
 
+B = return_list$B
+
+apply(simplify2array(B),1:2,quantile,0.95)
+apply(simplify2array(B),1:2,quantile,0.05)
+apply(simplify2array(B),1:2, mean)
+
+### DIAGNOSTIC IN CODA
+#X_mc <- mcmc(data = X, start = burnin + 1, end = niter, thin = thin)
+#plot(X_mc)
+#summary(X_mc)
+
+# Autocovariances
+#acfplot(X_mc, lag.max = 30)
+
+# (0.025; 0.5, 0.975) quantiles 
+#cumuplot(X_mc)
+
+# Effective sample size:
+#effectiveSize(X_mc)
+#dim(X_mc)[1]
+
+Q <- apply(simplify2array(return_list$B), 1:2, quantile, prob = c(0.05, 0.95))
+M <- apply(simplify2array(return_list$B), 1:2, mean)
+
 
 ########### Simulation from rewritten .gjamReduct ###########
 

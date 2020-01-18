@@ -238,6 +238,25 @@ print(A)
 print(k)
 
 #check of conformity
+#Possible checks
+#X_mc <- mcmc(data = X, start = burnin + 1, end = niter, thin = thin)
+#x11()
+#plot(X_mc)
+#summary(X_mc)
+
+# Autocovariances
+#acfplot(X_mc, lag.max = 30)
+
+# (0.025; 0.5, 0.975) quantiles 
+#cumuplot(X_mc)
+
+# Effective sample size:
+#effectiveSize(X_mc)
+#dim(X_mc)[1]
+
+
+
+
 
 .tnorm <- function(n,lo,hi,mu,sig){   
   
