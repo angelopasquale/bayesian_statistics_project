@@ -35,7 +35,7 @@ library("MixMatrix")
 setwd("/Users/angelopasquale/Documents/University/LM/YEAR2/SEM1/BS/Project/implementation/gjam/")
 Rcpp::sourceCpp('src/cppFns.cpp') #in gjam sources
 
-simulation_fun<-function(Sp=5,nsamples=400, r=6, K_t=40){
+simulation_fun<-function(Sp=15,nsamples=400, r=6, K_t=4){
   S<-Sp
   n<- nsamples
   #iterations<-it
@@ -56,7 +56,7 @@ simulation_fun<-function(Sp=5,nsamples=400, r=6, K_t=40){
   A<-matrix(NA,nrow=K_t,ncol=r) #A is the matrix with the atoms only. Initialization.
   sig=matrix(runif(n=r*r),ncol=r) #sig is the variance covariance matrix of Z.
   for(i in 1:K_t){
-    A[i,]<-mvrnorm(n = 1, rep(20,r), Sigma=3*diag(r)) # We sample the unique values of A
+    A[i,]<-mvrnorm(n = 1, rep(0,r), Sigma=1*diag(r)) # We sample the unique values of A
   }
   idx<-sample((1:K_t),S,replace=T) #idx represents the labels
   Lambda<-A[idx,] #We expand A using the labels to obtain Lambda (what we used to call A)
@@ -71,14 +71,28 @@ simulation_fun<-function(Sp=5,nsamples=400, r=6, K_t=40){
   # We obtain our binary dataset. Secondo me vi conviene prima testare il modello con Y_cont e poi su Y
   Y<- ifelse(Y_cont>0,1,0)
   
-  give_back<-list(B_true=B, Xdesign=X, mu_true=L, R_true=R_true, V=Y_cont, Y=Y)
+  give_back<-list(A_true = Lambda, B_true=B, Xdesign=X, mu_true=L, R_true=R_true, V=Y_cont, Y=Y)
   return(give_back)
 }
 
 data<-simulation_fun()
 
 source(file = "/Users/angelopasquale/Documents/University/LM/YEAR2/SEM1/BS/Project/Bayesian_Statistics_Project/code/GJAM_Gibbs_Sampler_Rcpp.R")
-return_list <- GJAM_Gibbs_Sampler_Rcpp(data$Xdesign, data$Y, 6, 40, 1e1, 1e3, 1)
+return_list <- GJAM_Gibbs_Sampler_Rcpp(data$Xdesign, data$Y, 6, 80, 1e-1, 1e1, 1)
 
-Q <- apply(simplify2array(return_list$B), 1:2, quantile, prob = c(0.05, 0.95))
-M <- apply(simplify2array(return_list$B), 1:2, mean)
+
+########### Simulation from rewritten .gjamReduct ###########
+
+library(gjam)
+
+f <- gjamSimData(n = 50, S = 5, Q = 4, typeNames = 'PA')
+
+source(file = "/Users/angelopasquale/Documents/University/LM/YEAR2/SEM1/BS/Project/Bayesian_Statistics_Project/code/gjam.R")
+
+rl   <- list(r = 8, N = 4)
+ml   <- list(ng = 1000, burnin = 500, typeNames = 'PA', reductList = rl)
+
+out  <- .gjamReduct(f$formula, xdata = f$xdata, ydata = f$ydata, modelList = ml)
+
+pl  <- list(trueValues = f$trueValues, GRIDPLOTS = T)
+gjamPlot(output = out, plotPars = pl)
