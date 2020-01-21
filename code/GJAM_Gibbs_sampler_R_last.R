@@ -266,10 +266,10 @@ GJAM_Gibbs_Sampler_R_last <- function(x, Y, r, N_stick, alpha0, posteriorDraws, 
       # sigmaBetaj <- sigmaBetaj + diag(ncol(sigmaBetaj))*0.01
       sigmaBetaj <- make.positive.definite(sigmaBetaj, tol=1e-3)
       sigmaBetaj[lower.tri(sigmaBetaj)] = t(sigmaBetaj)[lower.tri(sigmaBetaj)]
-      B_star[j,] <- rmvnormRcpp ( n = 1, mu = muBetaj, sigma = sigmaBetaj )
+      B[j,] <- rmvnormRcpp ( n = 1, mu = muBetaj, sigma = sigmaBetaj )
     }
     
-    B = solveRcpp(D)^(1/2) %*% B_star; 
+    B_star = (D)^(1/2) %*% B; 
     
     list_B[[niter]] <- B
     list_A[[niter]] <- A

@@ -77,8 +77,8 @@ simulation_fun<-function(Sp=15,nsamples=400, r=6, K_t=4){
 
 data<-simulation_fun()
 
-source(file = "/Users/angelopasquale/Documents/University/LM/YEAR2/SEM1/BS/Project/Bayesian_Statistics_Project/code/GJAM_Gibbs_Sampler.R")
-return_list <- GJAM_Gibbs_Sampler(data$Xdesign, data$Y, 6, 80, 5, 1e1, 1)
+source(file = "/Users/angelopasquale/Documents/University/LM/YEAR2/SEM1/BS/Project/Bayesian_Statistics_Project/code/GJAM_Gibbs_Sampler_R_last.R")
+return_list <- GJAM_Gibbs_Sampler_R_last(data$Xdesign, data$Y, 6, 80, 1e1, 1e2, 1)
 
 B = return_list$B
 
@@ -109,7 +109,7 @@ M <- apply(simplify2array(return_list$B), 1:2, mean)
 
 library(gjam)
 
-f <- gjamSimData(n = 500, S = 5, Q = 4, typeNames = 'PA')
+f <- gjamSimData(n = 100, S = 5, Q = 4, typeNames = 'PA')
 
 source(file = "/Users/angelopasquale/Documents/University/LM/YEAR2/SEM1/BS/Project/Bayesian_Statistics_Project/code/gjam.R")
 

@@ -96,7 +96,7 @@ GJAM_Gibbs_Sampler_Rcpp_last <- function(x, Y, r, N_stick, alpha0, posteriorDraw
     
   # resample the cluster assignments
   # for each species j = 1,...,S do
-  Z <- matrix(data = 0, nrow = N_stick, ncol = r) 
+  # Z <- matrix(data = 0, nrow = N_stick, ncol = r) 
   #Z <- rmvnormRcpp(N_stick,rep(0,r),1/S*diag(r))
   # Q <- matrix(data = 0, nrow = S, ncol = N_stick) 
     
@@ -144,7 +144,7 @@ GJAM_Gibbs_Sampler_Rcpp_last <- function(x, Y, r, N_stick, alpha0, posteriorDraw
     #   
     #   k[l] = sample(N_stick, size = 1, replace=TRUE, prob = pl[l,])
     # }
-    # BUT this is done in Rcpp by the function getPmatKRcpp in RcppExports, which computes the matrix pl
+    # BUT this is done in Rcpp by the fun ction getPmatKRcpp in RcppExports, which computes the matrix pl
     pl <- getPmatKRcpp(pveck = p,Yk = V, Zk = Z,
                        Xk = x, Bk = B, Wk = W,
                        sigmasqk = sigmaeps2)
@@ -236,18 +236,18 @@ GJAM_Gibbs_Sampler_Rcpp_last <- function(x, Y, r, N_stick, alpha0, posteriorDraw
     #S_Dz[lower.tri(S_Dz)] = t(S_Dz)[lower.tri(S_Dz)]
     Dz = .riwish(df = 2 + r + N_stick - 1, S = S_Dz)
     
-    # 
+    #
     # Step 7 : TO CHECK, and REALLY CAREFULLY !!!!!!!!! in R, todo Rcpp?
     Sigma_star = A %*% t(A) + sigmaeps2 * diag(S)
     D = diag(diag(Sigma_star))
     R = solveRcpp(D)^(1/2) %*% Sigma_star %*% solveRcpp(D)^(1/2)
     B_star = solveRcpp(D)^(1/2) %*% B
-    
+
     for (i in seq(1,n)) {
       for (j in seq(1,S)) {
-        
+
         mean1 = as.vector(B_star[j,] %*% x[i,] + A[j,] %*% W[i,])
-        
+
         if (Y[i,j] == 1){
           V_star[i,j] <- .tnorm(1, 0, Inf, mean1, sigmaeps2)
         } else {
@@ -255,19 +255,19 @@ GJAM_Gibbs_Sampler_Rcpp_last <- function(x, Y, r, N_stick, alpha0, posteriorDraw
         }
       }
     }
-    
+
     V = V_star %*% solveRcpp(D)^(1/2)
-    
-    
+
+
     # L<-x%*%t(B) #We create the mean by multiplying B with the design matrix X
-    # 
+    #
     # Sigma_star <-A%*%t(A)+sigmaeps2*diag(S) #We obtain Sigma. Here sigma_epsilon^2 is 0.1
-    # 
-    # 
+    #
+    #
     # #We obtain the correlation matrix R
-    # B_star =cov2cor(Sigma_star) 
+    # B_star =cov2cor(Sigma_star)
     # V<-L+rmvnormRcpp(n = n, mu=rep(0,S), sigma=B_star)
-    
+
     # Step 8 : TO CHECK, and REALLY CAREFULLY !!!!!!!!! to do in Rcpp?
     for (j in seq(1,S,1)) {
       muBetaj = solveRcpp(1/(sigmaB)^2 * diag(n_cov) + 1/sigmaeps2 * t(x) %*% x) %*% t(x) %*% (V_star[,j] - W %*% A[j,]) * 1/sigmaeps2
@@ -277,8 +277,8 @@ GJAM_Gibbs_Sampler_Rcpp_last <- function(x, Y, r, N_stick, alpha0, posteriorDraw
       sigmaBetaj[lower.tri(sigmaBetaj)] = t(sigmaBetaj)[lower.tri(sigmaBetaj)]
       B_star[j,] <- rmvnormRcpp ( n = 1, mu = muBetaj, sigma = sigmaBetaj )
     }
-    
-    B = solveRcpp(D)^(1/2) %*% B_star; 
+
+    B = solveRcpp(D)^(1/2) %*% B_star;
     
     list_B[[niter]] <- B
     list_A[[niter]] <- A
