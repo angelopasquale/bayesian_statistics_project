@@ -135,7 +135,16 @@ h<-list()
 for(i in (1:niter)){
   h[[i]]<-list_A[[i]][2,2]
 }
-
+h<-as.numeric(h)
+h<-as.data.frame(h)
+h<-as.mcmc(h)
+h<-ggs(h)
+x11()
+ggs_traceplot(h) + 
+  geom_area(colour="blue") + xlab('Year') + ylab('Activity ') + theme(text = element_text(size=15, family="LM Roman 10")) +
+  labs(fill = 'Technologies')+ ggtitle('Baseline - Activity') 
+x11()
+ggs_running(h)
 h
 }
   
