@@ -17,3 +17,4 @@ tnorm <- function(n,lo,hi,mu,sig){
   z[z == -Inf] <- hi[z == -Inf] - tiny
   z
 }
+

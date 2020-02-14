@@ -1,6 +1,7 @@
 STEP1RCPP<-function(N_stick,r,sigmaeps2,Z,Q,k,x,Dz,W,V,B,eta_h,Y){
   ##### Step 1 #####
-  
+  #print("-----------------------------")
+  #print("------------STEP1------------")
   # resample the cluster assignments
   # for each species j = 1,...,S do
   # Z <- matrix(data = 0, nrow = N_stick, ncol = r) 
