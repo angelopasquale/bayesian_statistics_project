@@ -2,7 +2,7 @@ STEP7RCPP<-function(A,sigmaeps2,S,B,n_sites,W,Y,x){
   Sigma_star = A %*% t(A) + sigmaeps2 * diag(S)
   D = diag(diag(Sigma_star))
   R = solveRcpp(D)^(1/2) %*% Sigma_star %*% solveRcpp(D)^(1/2)
-  B_star = solveRcpp(D)^(1/2) %*% B
+  B_star = (D)^(1/2) %*% B
   V_star=matrix(0,nrow=n_sites,ncol=S)
   
   for (i in seq(1,n_sites)) {
@@ -17,8 +17,10 @@ STEP7RCPP<-function(A,sigmaeps2,S,B,n_sites,W,Y,x){
       }
     }
   }
-  
-  V = V_star %*% solveRcpp(D)^(1/2)
-  V
+  #print(dim(solveRcpp(D)^(1/2)))
+ # print(dim(V_star))
+  V = V_star%*%solveRcpp(D)^(1/2) 
+  newList <- list("V" = V, "V_star" = V_star, "D"=D,"B_star"=B_star)
+  return(newList)
   
 }

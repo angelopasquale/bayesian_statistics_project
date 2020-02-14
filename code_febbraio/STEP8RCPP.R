@@ -9,6 +9,6 @@ STEP8RCPP<-function(S,x,sigmaeps2,V_star,W,A,sigmaB,n_cov,D,B_star){
     B_star[j,] <- rmvnormRcpp ( n = 1, mu = muBetaj, sigma = sigmaBetaj )
   }
   
-  B = solveRcpp(D)^(1/2) %*% B_star;
-  B
+ # B = solveRcpp(D)^(1/2) %*% B_star;
+  B_star
 }

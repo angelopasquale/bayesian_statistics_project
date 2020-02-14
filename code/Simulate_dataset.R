@@ -38,9 +38,9 @@ library("invgamma")
 library("MixMatrix")
 
 #setwd("/Users/angelopasquale/Documents/University/LM/YEAR2/SEM1/BS/Project/implementation/gjam/")
-#setwd("C:/Users/loren/OneDrive/Desktop/bayesian_project/gjam_2.2.7/gjam")
-setwd("~/Desktop/Polimi5anno/Bayesiana/Progetto_Bayes/gjam_2.2.7")
-Rcpp::sourceCpp('src/cppFns.cpp') #in gjam sources
+setwd("C:/Users/loren/OneDrive/Desktop/bayesian_project/gjam_2.2.7/gjam")
+#setwd("~/Desktop/Polimi5anno/Bayesiana/Progetto_Bayes/gjam_2.2.7")
+Rcpp::sourceCpp("src/cppFns.cpp") #in gjam sources
 
 simulation_fun<-function(Sp=15,nsamples=400, r=6, K_t=4){
   S<-Sp
@@ -83,9 +83,9 @@ simulation_fun<-function(Sp=15,nsamples=400, r=6, K_t=4){
 }
 
 data<-simulation_fun()
-#source(file = "/Users/loren/OneDrive/Desktop/bayesian_project/bayesian_statistics_project/code/GJAM_Gibbs_Sampler_R_last.R")
+source(file = "C:/Users/loren/OneDrive/Desktop/bayesian_project/bayesian_statistics_project/code/GJAM_Gibbs_Sampler_R_last.R")
 #source(file = "/Users/angelopasquale/Documents/University/LM/YEAR2/SEM1/BS/Project/Bayesian_Statistics_Project/code/GJAM_Gibbs_Sampler_R_last.R")
-source(file = "/Users/lombardata/Desktop/Polimi5anno/Bayesiana/Progetto_Bayes/bayesian_statistics_project/code/GJAM_Gibbs_sampler_R_last.R")
+#source(file = "/Users/lombardata/Desktop/Polimi5anno/Bayesiana/Progetto_Bayes/bayesian_statistics_project/code/GJAM_Gibbs_sampler_R_last.R")
 
 return_list <- GJAM_Gibbs_Sampler_R_last(data$Xdesign, data$Y, 6, 80, 1e1, 1e2, 1)
 

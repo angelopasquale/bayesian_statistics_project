@@ -1,4 +1,4 @@
-prova_step<-function(alpha0,niter,N_stick,r,S){
+prova_step<-function(alpha0,niter,burnin,N_stick,r,S){
 eta_h <- 1/rgamma(r, shape = 1/2,  rate = 1/1e4  )
 Dz<-riwish( 2 + r - 1, 4 * diag(1/eta_h))
 W<-matrix(0,nrow=n_sites,ncol=r)
@@ -65,7 +65,7 @@ simulation_fun<-function(Sp=S,nsamples=n_sites, r=4, K_t=4){
   Y_cont<-L+rmvnorm(n = n, mean=rep(0,S), sigma=R_true)
   # We obtain our binary dataset. Secondo me vi conviene prima testare il modello con Y_cont e poi su Y
   Y<- ifelse(Y_cont>0,1,0)
-  
+  Y<-Y_cont
   give_back<-list(A_true = Lambda, B_true=B, Xdesign=X, mu_true=L, R_true=R_true, V=Y_cont, Y=Y)
   return(give_back)
 }
@@ -115,14 +115,14 @@ for(i in 1:niter){
   #6
 Dz<-STEP6(r,Dz,Z,N_stick)
  #7
- lista<-STEP7(A,sigmaeps2,S,B,n_sites,W,Y,x)
+ lista<-STEP7RCPP(A,sigmaeps2,S,B,n_sites,W,Y,x)
   V<-lista$V
  # V1<-STEP7RCPP(A,sigmaeps2,S,B,n_sites,W,Y,x)
   V_star<-lista$V_star
   B_star=lista$B_star
   D=lista$D
   #8
- B<-STEP8(S,x,sigmaeps2,V_star,W,A,sigmaB,n_cov,D,B_star)
+ B<-STEP8RCPP(S,x,sigmaeps2,V,W,A,sigmaB,n_cov,D,B)
   #B1<-STEP8RCPP(S,x,sigmaeps2,V_star,W,A,sigmaB,n_cov,D,B_star)
   list_B[[i]] <- B
   list_A[[i]] <- A
@@ -132,19 +132,27 @@ Dz<-STEP6(r,Dz,Z,N_stick)
   list_sigmaeps2[[i]] <- sigmaeps2
 }
 h<-list()
-for(i in (1:niter)){
-  h[[i]]<-list_A[[i]][2,2]
+#for(i in (burnin:niter)){
+ # h[[i]]<-list_A[[i]][2,2]
+#}
+#h<-as.numeric(h)
+#h<-as.data.frame(h)
+A_media=matrix(0,nrow=S,ncol=r)
+for(i in (1:S)){
+  for(j in (1:r)){
+    tot=0
+    for(k in (burnin:niter)){
+      tot=tot+list_A[[k]][i,j]
+    }
+    A_media[i,j]=tot/(niter-burnin)
+  }
 }
-h<-as.numeric(h)
-h<-as.data.frame(h)
-h<-as.mcmc(h)
-h<-ggs(h)
-x11()
-ggs_traceplot(h) + 
-  geom_area(colour="blue") + xlab('Year') + ylab('Activity ') + theme(text = element_text(size=15, family="LM Roman 10")) +
-  labs(fill = 'Technologies')+ ggtitle('Baseline - Activity') 
-x11()
-ggs_running(h)
+
+#A = return_list$A
+
+A_sup<<-apply(simplify2array(list_A),1:2,quantile,0.95)
+A_inf<<-apply(simplify2array(list_A),1:2,quantile,0.05)
+h<-list("A_media"=A_media,"A_true"=data$A_true,"A_inf"=A_inf,"A_sup"=A_sup)
 h
 }
   
