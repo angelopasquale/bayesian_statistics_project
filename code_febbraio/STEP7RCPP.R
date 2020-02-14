@@ -19,7 +19,7 @@ STEP7RCPP<-function(A,sigmaeps2,S,B,n_sites,W,Y,x){
   }
   #print(dim(solveRcpp(D)^(1/2)))
  # print(dim(V_star))
-  V = V_star%*%solveRcpp(D)^(1/2) 
+  V = V_star %*% solveRcpp(D)^(1/2)
   newList <- list("V" = V, "V_star" = V_star, "D"=D,"B_star"=B_star)
   return(newList)
   

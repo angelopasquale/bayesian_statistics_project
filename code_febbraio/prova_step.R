@@ -64,9 +64,9 @@ simulation_fun<-function(Sp=S,nsamples=n_sites, r=4, K_t=4){
   #We sample V from the model
   Y_cont<-L+rmvnorm(n = n, mean=rep(0,S), sigma=R_true)
   # We obtain our binary dataset. Secondo me vi conviene prima testare il modello con Y_cont e poi su Y
-  Y<- ifelse(Y_cont>0,1,0)
-  Y<-Y_cont
-  give_back<-list(A_true = Lambda, B_true=B, Xdesign=X, mu_true=L, R_true=R_true, V=Y_cont, Y=Y)
+  Ybin<- ifelse(Y_cont>0,1,0)
+  Ycont<-Y_cont
+  give_back<-list(A_true = Lambda, B_true=B, Xdesign=X, mu_true=L, R_true=R_true, V=Ycont, Y=Ybin)
   return(give_back)
 }
 data<-simulation_fun()
@@ -122,8 +122,8 @@ Dz<-STEP6(r,Dz,Z,N_stick)
   B_star=lista$B_star
   D=lista$D
   #8
- B<-STEP8RCPP(S,x,sigmaeps2,V,W,A,sigmaB,n_cov,D,B)
-  #B1<-STEP8RCPP(S,x,sigmaeps2,V_star,W,A,sigmaB,n_cov,D,B_star)
+  #B<-STEP8TaylorRCPP(S,x,sigmaeps2,V,W,A,sigmaB,n_cov,D,B)
+  B<-STEP8RCPP(S,x,sigmaeps2,V_star,W,A,sigmaB,n_cov,D,B_star)
   list_B[[i]] <- B
   list_A[[i]] <- A
   list_Z[[i]] <- Z

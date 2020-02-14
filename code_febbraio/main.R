@@ -34,6 +34,7 @@ source("STEP4RCPP.R")
 source("STEP5RCPP.R")
 source("STEP7RCPP.R")
 source("STEP8RCPP.R")
+source("STEP8TaylorRCPP.R")
 source("gjamHfunctions.R")
 source("check_IC.R")
 source("prova_step.R")
@@ -45,7 +46,7 @@ burnin=500
 N_stick=13
 r=4
 S<-5 #number of species
-n_sites=300
+n_sites=180
 #q<-list()
 #for(i in 1:length(alpha0)){
 #nn<-prova_step(alpha0[i],niter)
