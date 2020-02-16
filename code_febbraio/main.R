@@ -40,9 +40,9 @@ source("check_IC.R")
 source("prova_step.R")
 
 #alpha0=c(1e-3,1e-2,1e-1,1,1e1,1e2,1e3)
-alpha0<-10
-niter=1000
-burnin=500
+alpha0<-1e2
+niter=5
+burnin=0
 N_stick=13
 r=4
 S<-5 #number of species

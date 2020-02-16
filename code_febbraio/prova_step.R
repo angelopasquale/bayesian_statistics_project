@@ -98,7 +98,7 @@ for(i in 1:niter){
   #A<-L$A
   #Cardinality_S<-L$Cardinality_S
   A<-STEP1RCPP(N_stick,r,sigmaeps2,Z,Q,k,x,Dz,W,V,B,eta_h,Y)
-  
+  print(A)
   #2
   #W<-STEP2(sigmaeps2,A,r,V,B,x,n_sites,W)
   W<-STEP2RCPP(sigmaeps2,A,r,V,B,x,n_sites,W)
@@ -122,8 +122,8 @@ Dz<-STEP6(r,Dz,Z,N_stick)
   B_star=lista$B_star
   D=lista$D
   #8
-  #B<-STEP8TaylorRCPP(S,x,sigmaeps2,V,W,A,sigmaB,n_cov,D,B)
-  B<-STEP8RCPP(S,x,sigmaeps2,V_star,W,A,sigmaB,n_cov,D,B_star)
+  B<-STEP8TaylorRCPP(S,x,sigmaeps2,V,W,A,sigmaB,n_cov,D,B)
+  #B<-STEP8RCPP(S,x,sigmaeps2,V_star,W,A,sigmaB,n_cov,D,B_star)
   list_B[[i]] <- B
   list_A[[i]] <- A
   list_Z[[i]] <- Z
