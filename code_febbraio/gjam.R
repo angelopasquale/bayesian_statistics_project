@@ -1,4 +1,4 @@
-#source(file = "gjamHfunctions.R")
+source(file = "gjamHfunctions.R")
 gjamReduct <- function(formula, xdata, ydata, modelList){
   
   holdoutN      <-  0

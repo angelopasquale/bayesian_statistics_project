@@ -32,7 +32,7 @@ logpl <- matrix(0, nrow = S, ncol = N_stick)
 
 
 
-n_cov = ncol(x) # number of covariates (no intercept)
+n_cov = ncol(x) # number of covariates 
 muBeta = rep ( 0, times=n_cov ) # Prior mean of the beta coefficients
 sigmaBeta = diag ( n_cov ) # Prior variance-covariance matrix of the beta coefficients
 B <- matrix(data = 0, nrow = S, ncol = n_cov) # coefficient matrix
@@ -93,7 +93,7 @@ Dz<-STEP6(r,Dz,Z,N_stick)
 #Here we get the chain for one element of matrix A
 chain<-list()
 for(i in (burnin:ndraws)){
-  chain[[i]]<-list_A[[i]][2,2]
+  chain[[i]]<-list_A[[i]][1,2]
 chain}
 #Cutting away burnin NULL values in the chain
 chain<-chain[burnin:ndraws]
@@ -112,12 +112,20 @@ for(i in (1:S)){
 }
 
 #A = return_list$A
-
+bp<-list()
 A_sup<<-apply(simplify2array(list_A),1:2,quantile,0.95)
 A_inf<<-apply(simplify2array(list_A),1:2,quantile,0.05)
+EE<-matrix(0,nrow=S,ncol=r)
+for(r in(burnin:ndraws)){
+  EE<-list_A[[r]]
+  bp[[r]]<-dim(uniquecombs(EE))[1]
+}
+bp<-bp[burnin:ndraws]
 
+#bp<-bp[burnin:ndraws]
 #What you take back in the main
-h<-list("A_media"=A_media,"A_true"=data$A_true,"A_inf"=A_inf,"A_sup"=A_sup,"x"=x,"Y"=Y)
+#h<-list("A_media"=A_media,"A_true"=data$A_true,"A_inf"=A_inf,"A_sup"=A_sup,"x"=x,"Y"=Y,"bp"=bp)
 return(chain)
+#return(h)
 }
   

@@ -13,6 +13,7 @@ library("MCMCpack")
 library("coda")
 library("ggmcmc")
 library("extrafont")
+library("mgcv")
 # Install **TTF** Latin Modern Roman fonts from www.fontsquirrel.com/fonts/latin-modern-roman
 # Import the newly installed LModern fonts, change the pattern according to the 
 # filename of the lmodern ttf files in your fonts folder
@@ -41,15 +42,15 @@ source("fit_gjam_gibbs.R")
 
 #Initialization of function parameters needed
 alpha0<-1e2 #Dirichlet mass parameter
-ndraws=600 #number of iterations
+ndraws=2500 #number of iterations
 burnin=500 #number of discarded iterations
 N_stick=13 #level of truncation of the Dirichlet process
 r=4 #number of latent factors
-S<-5 #number of species
-n_sites=180 #number of locations
+S<-50 #number of species
+n_sites=200 #number of locations
 
 #This function generates matrix x of covariates and matrix Y of absence/presence
-simulation_fun<-function(Sp=S,nsamples=n_sites, r=4, K_t=4){
+simulation_fun<-function(Sp=S,nsamples=n_sites, r=4, K_t=3){
   S<-Sp
   n<- nsamples
   #iterations<-it
@@ -93,40 +94,45 @@ x<-data$Xdesign #x matrix of covariates
 Y<-data$Y #Binary matrix Y
 
 #Call of the function
-chain<-fit_gjam_gibbs(alpha0,ndraws,burnin,N_stick,r,S, n_sites,x,Y)
+h_5<-fit_gjam_gibbs(alpha0,ndraws,burnin,N_stick,r,S, n_sites,x,Y)
+#clpr<-h_5$bp
+#clpr<-as.vector(clpr)
+
+#h<-fit_gjam_gibbs(alpha0,ndraws,burnin,N_stick,r,10, n_sites,x,Y)
+#h<-fit_gjam_gibbs(alpha0,ndraws,burnin,N_stick,r,20, n_sites,x,Y)
 
 #Analysis of output
-chain<-as.vector(chain)
-chain<-as.numeric(chain)
-chain<-as.data.frame(chain)
-x=h$x
-Y=h$Y
-#h2<-prova_step(alpha0,niter,N_stick,r,S)
-#h3<-prova_step(alpha0,niter,N_stick,r,S)
-#h<-list(h1,h2,h3)
-chain<-as.mcmc(chain)
-#h2<-as.mcmc(h2)
-#h3<-as.mcmc(h3)
-#h<-as.mcmc.list(h1,h2,h3)
-chain<-ggs(chain)
-#GRAFICI DELLA CATENA
-
-#Traceplot
-x11()
-ggs_traceplot(chain) #+ 
- # geom_area(colour="blue") + xlab('Iterations') + ylab('A[2,2] ') + theme(text = element_text(size=15, family="LM Roman 10")) +
-# labs(fill = 'Technologies')+ ggtitle('Traceplot') 
-#Running Mean
-x11()
-ggs_running(chain)
-
-#Intervalli di confidenza per A
-mat_bin=matrix(0,nrow=S,ncol=r)
-#check_IC(h$A_inf, h$A_sup, h$A_true, mat_bin)
-
-#Autocorrelation
-x11()
-ggs_autocorrelation(chain)
-
-x11()
-ggs_histogram(chain)
+# chain<-as.vector(chain)
+# chain<-as.numeric(chain)
+# chain<-as.data.frame(chain)
+# x=h$x
+# Y=h$Y
+# #h2<-prova_step(alpha0,niter,N_stick,r,S)
+# #h3<-prova_step(alpha0,niter,N_stick,r,S)
+# #h<-list(h1,h2,h3)
+# chain<-as.mcmc(chain)
+# #h2<-as.mcmc(h2)
+# #h3<-as.mcmc(h3)
+# #h<-as.mcmc.list(h1,h2,h3)
+# chain<-ggs(chain)
+# #GRAFICI DELLA CATENA
+# 
+# #Traceplot
+# x11()
+# ggs_traceplot(chain) #+ 
+#  # geom_area(colour="blue") + xlab('Iterations') + ylab('A[2,2] ') + theme(text = element_text(size=15, family="LM Roman 10")) +
+# # labs(fill = 'Technologies')+ ggtitle('Traceplot') 
+# #Running Mean
+# x11()
+# ggs_running(chain)
+# 
+# #Intervalli di confidenza per A
+# mat_bin=matrix(0,nrow=S,ncol=r)
+# #check_IC(h$A_inf, h$A_sup, h$A_true, mat_bin)
+# 
+# #Autocorrelation
+# x11()
+# ggs_autocorrelation(chain)
+# 
+# x11()
+# ggs_histogram(chain)
