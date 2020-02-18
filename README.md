@@ -68,13 +68,13 @@ Moreover, the analysis of convergence of the chains is performed through tracepl
 
 Considering for instance an element of matrix **A**, we get the chain:
 * autocorrelation
-![alt text](https://github.com/angelopasquale/bayesian_statistics_project/blob/master/images/autocorr100000.png)
+![alt text](https://github.com/angelopasquale/bayesian_statistics_project/blob/master/images/autocorr10000.png)
 * values
-![alt text](https://github.com/angelopasquale/bayesian_statistics_project/blob/master/images/freq100000.png)
+![alt text](https://github.com/angelopasquale/bayesian_statistics_project/blob/master/images/freq10000.png)
 * running mean
-![alt text](https://github.com/angelopasquale/bayesian_statistics_project/blob/master/images/rm100000iter.png)
+![alt text](https://github.com/angelopasquale/bayesian_statistics_project/blob/master/images/rm10000iter.png)
 * traceplot
-![alt text](https://github.com/angelopasquale/bayesian_statistics_project/blob/master/images/tr.png)
+![alt text](https://github.com/angelopasquale/bayesian_statistics_project/blob/master/images/ts.png)
 
 ## Built With
 
