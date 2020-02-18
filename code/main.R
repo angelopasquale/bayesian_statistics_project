@@ -5,11 +5,7 @@ rm(list=ls())
 # Clear console
 cat("\014") 
 
-# needed packages
-needed_packages <- c("MASS","coda","ggmcmc","extrafont","mgcv","mvtnorm", "matlib", "devtools", "MCMCpack", "gjam", "invgamma", "MixMatrix", "tictoc", "corpcor") 
-new_packages <- needed_packages[!(needed_packages %in% installed.packages()[, "Package"])] 
-if (length(new_packages)) install.packages(new_packages) 
-lapply(needed_packages, require, character.only = TRUE) 
+
 
 # Install **TTF** Latin Modern Roman fonts from www.fontsquirrel.com/fonts/latin-modern-roman
 # Import the newly installed LModern fonts, change the pattern according to the 
@@ -35,7 +31,7 @@ source("src/gjam_gibbs_sampler_R.R")
 source("src/gjam_gibbs_sampler_Rcpp.R")
 
 # Initialization of function parameters
-alpha0<-1e2 #Dirichlet mass parameter
+alpha0<-1 #Dirichlet mass parameter
 ndraws=10000 #number of iterations
 burnin=500 #number of discarded iterations
 N_stick=150 #level of truncation of the Dirichlet process
