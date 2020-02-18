@@ -4,6 +4,8 @@ This project aims at implementing a Gibbs Sampler for the GJAM model presented b
 
 For a detailed mathematical description of the model, please refer to our report, contained in this Github repository.
 
+![alt text](http://url/to/img.png)
+
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
