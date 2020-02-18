@@ -5,6 +5,11 @@ rm(list=ls())
 # Clear console
 cat("\014") 
 
+needed_packages <- c("MASS","coda","ggmcmc","extrafont","mgcv","mvtnorm", "matlib", "devtools", "MCMCpack", "gjam", "invgamma", "MixMatrix", "tictoc", "corpcor") 
+new_packages <- needed_packages[!(needed_packages %in% installed.packages()[, "Package"])] 
+if (length(new_packages)) install.packages(new_packages) 
+lapply(needed_packages, require, character.only = TRUE) 
+
 #Libraries needed
 library("mvtnorm")
 library("MASS")
@@ -94,7 +99,7 @@ x<-data$Xdesign #x matrix of covariates
 Y<-data$Y #Binary matrix Y
 
 #Call of the function
-h_5<-gjam_gibbs(alpha0,ndraws,burnin,N_stick,r,S, n_sites,x,Y)
+h_5<-gjam_gibbs_sampler(alpha0,ndraws,burnin,N_stick,r,S, n_sites,x,Y)
 #clpr<-h_5$bp
 #clpr<-as.vector(clpr)
 chain<-h_5

@@ -1,4 +1,4 @@
-gjam_gibbs<-function(alpha0,ndraws,burnin,N_stick,r,S,n_sites,x,Y){
+gjam_gibbs_sampler<-function(alpha0,ndraws,burnin,N_stick,r,S,n_sites,x,Y){
 
 eta_h <- 1/rgamma(r, shape = 1/2,  rate = 1/1e4  )
 Dz<-riwish( 2 + r - 1, 4 * diag(1/eta_h))
