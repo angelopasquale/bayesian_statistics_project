@@ -1,11 +1,8 @@
 STEP1<-function(N_stick,r,sigmaeps2,Z,Q,k,x,Dz,W,V,B){
   for ( j in 1:N_stick ) {
     if (!(j %in% k)) {
-      #print('entered if')
       Z[j,] <- rmvnorm ( n = 1, mean = rep(0, times = r), sigma = Dz )
       Cardinality_S[j]<- 1
-      #problema: k non viene modificato, se ho un nuovo label aumento
-      #la cardinalità del label rispettivo ma non inserisco nel k il nuovo label
     }
     else { # if j in k
       Cardinality_S[j]<- sum(j==k)
@@ -17,7 +14,6 @@ STEP1<-function(N_stick,r,sigmaeps2,Z,Q,k,x,Dz,W,V,B){
         }
         Q[l,k[l]]<- 1
       }
-      # Sigma_Zj <- Sigma_Zj + diag(ncol(Sigma_Zj))*0.01
       Sigma_Zj <- make.positive.definite(Sigma_Zj, tol=1e-3)
       # because of machine precision the matrix could seem to be not positive definite:
       # we overcome this by making sure your det(Sigma_Zj) returns a positive

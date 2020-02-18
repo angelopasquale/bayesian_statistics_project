@@ -38,7 +38,7 @@ source("STEP8RCPP.R")
 source("STEP8TaylorRCPP.R")
 source("gjamHfunctions.R")
 source("check_IC.R")
-source("fit_gjam_gibbs.R")
+source("gjam_gibbs.R")
 
 #Initialization of function parameters needed
 alpha0<-1e2 #Dirichlet mass parameter
@@ -94,12 +94,11 @@ x<-data$Xdesign #x matrix of covariates
 Y<-data$Y #Binary matrix Y
 
 #Call of the function
-h_5<-fit_gjam_gibbs(alpha0,ndraws,burnin,N_stick,r,S, n_sites,x,Y)
+h_5<-gjam_gibbs(alpha0,ndraws,burnin,N_stick,r,S, n_sites,x,Y)
 #clpr<-h_5$bp
 #clpr<-as.vector(clpr)
 chain<-h_5
-#h<-fit_gjam_gibbs(alpha0,ndraws,burnin,N_stick,r,10, n_sites,x,Y)
-#h<-fit_gjam_gibbs(alpha0,ndraws,burnin,N_stick,r,20, n_sites,x,Y)
+
 
 #Analysis of output
 chain<-as.vector(chain)

@@ -1,4 +1,4 @@
-fit_gjam_gibbs<-function(alpha0,ndraws,burnin,N_stick,r,S,n_sites,x,Y){
+gjam_gibbs<-function(alpha0,ndraws,burnin,N_stick,r,S,n_sites,x,Y){
 
 eta_h <- 1/rgamma(r, shape = 1/2,  rate = 1/1e4  )
 Dz<-riwish( 2 + r - 1, 4 * diag(1/eta_h))
@@ -118,7 +118,9 @@ A_inf<<-apply(simplify2array(list_A),1:2,quantile,0.05)
 EE<-matrix(0,nrow=S,ncol=r)
 for(r in(burnin:ndraws)){
   EE<-list_A[[r]]
-  bp[[r]]<-dim(uniquecombs(EE))[1]
+  if(dim(uniquecombs(EE))[1]=="NULL"){bp[[r]]<-0}
+  else{
+  bp[[r]]<-dim(uniquecombs(EE))[1]}
 }
 bp<-bp[burnin:ndraws]
 
