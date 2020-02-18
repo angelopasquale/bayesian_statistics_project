@@ -35,11 +35,11 @@ source("src/gjam_gibbs_sampler_Rcpp.R")
 
 # Initialization of function parameters
 alpha0<-1 #Dirichlet mass parameter
-ndraws=10000 #number of iterations
+ndraws=1000 #number of iterations
 burnin=500 #number of discarded iterations
-N_stick=150 #level of truncation of the Dirichlet process
-r=4 #number of latent factors
 S<-30 #number of species
+N_stick=min(150,S) #level of truncation of the Dirichlet process
+r=4 #number of latent factors
 n_sites=100 #number of locations
 
 
