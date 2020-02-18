@@ -5,56 +5,45 @@ rm(list=ls())
 # Clear console
 cat("\014") 
 
+# needed packages
 needed_packages <- c("MASS","coda","ggmcmc","extrafont","mgcv","mvtnorm", "matlib", "devtools", "MCMCpack", "gjam", "invgamma", "MixMatrix", "tictoc", "corpcor") 
 new_packages <- needed_packages[!(needed_packages %in% installed.packages()[, "Package"])] 
 if (length(new_packages)) install.packages(new_packages) 
 lapply(needed_packages, require, character.only = TRUE) 
 
-#Libraries needed
-library("mvtnorm")
-library("MASS")
-library("corpcor")
-library("MCMCpack")
-library("coda")
-library("ggmcmc")
-library("extrafont")
-library("mgcv")
 # Install **TTF** Latin Modern Roman fonts from www.fontsquirrel.com/fonts/latin-modern-roman
 # Import the newly installed LModern fonts, change the pattern according to the 
 # filename of the lmodern ttf files in your fonts folder
-#font_import(pattern = "lmodern*")
-#loadfonts(device = "win")
-#par(family = "LM Roman 10")
+# font_import(pattern = "lmodern*")
+# loadfonts(device = "win")
+# par(family = "LM Roman 10")
 
-Rcpp::sourceCpp('cppFns.cpp')
-#Call of all functions needed
+# required source functions
+Rcpp::sourceCpp('src/cpp/cppFns.cpp')
 for (i in seq(1,8)) {
-  source(paste("STEP",i,".R", sep = ""))
+  source(paste("steps_R/STEP",i,".R", sep = ""))
 }
-source("compute_GD_prior.R")
-source("STEP3RCPP.R")
-source("tnorm.R")
-source("STEP1RCPP.R")
-source("STEP2RCPP.R")
-source("STEP4RCPP.R")
-source("STEP5RCPP.R")
-source("STEP7RCPP.R")
-source("STEP8RCPP.R")
-source("STEP8TaylorRCPP.R")
-source("gjamHfunctions.R")
-source("check_IC.R")
-source("gjam_gibbs_sampler.R")
+for (i in seq(1,8)) {
+  source(paste("steps_Rcpp/STEP",i,"RCPP.R", sep = ""))
+}
+source("steps_Rcpp/STEP8TaylorRCPP.R")
+source("src/compute_GD_prior.R")
+source("src/tnorm.R")
+source("src/gjamHfunctions.R")
+source("src/check_IC.R")
+source("src/gjam_gibbs_sampler.R")
 
-#Initialization of function parameters needed
+# Initialization of function parameters
 alpha0<-1e2 #Dirichlet mass parameter
 ndraws=2500 #number of iterations
 burnin=500 #number of discarded iterations
 N_stick=13 #level of truncation of the Dirichlet process
 r=4 #number of latent factors
-S<-50 #number of species
-n_sites=200 #number of locations
+S<-5 #number of species
+n_sites=100 #number of locations
 
-#This function generates matrix x of covariates and matrix Y of absence/presence
+
+# This function generates matrix x of covariates and matrix Y of absence/presence
 simulation_fun<-function(Sp=S,nsamples=n_sites, r=4, K_t=3){
   S<-Sp
   n<- nsamples
@@ -107,8 +96,8 @@ chain<-h_5
 
 #Analysis of output
 chain<-as.vector(chain)
- chain<-as.numeric(chain)
- chain<-as.data.frame(chain)
+chain<-as.numeric(chain)
+chain<-as.data.frame(chain)
 # x=h$x
 # Y=h$Y
 # #h2<-prova_step(alpha0,niter,N_stick,r,S)
@@ -137,5 +126,7 @@ x11()
 x11() 
 ggs_autocorrelation(chain)
 # 
- x11()
- ggs_histogram(chain)
+x11()
+ggs_histogram(chain)
+ 
+effectiveSize(chain$value)

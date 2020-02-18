@@ -1,5 +1,6 @@
 gjam_gibbs_sampler<-function(alpha0,ndraws,burnin,N_stick,r,S,n_sites,x,Y){
 
+tic("Parameters initialization from prior distributions:")
 eta_h <- 1/rgamma(r, shape = 1/2,  rate = 1/1e4  )
 Dz<-riwish( 2 + r - 1, 4 * diag(1/eta_h))
 W<-matrix(0,nrow=n_sites,ncol=r)
@@ -19,10 +20,8 @@ Q=matrix(0,nrow=S,ncol=N_stick)
 Z<-rmvnormRcpp(N_stick,rep(0,r),1/S*diag(r))
 logpl<-matrix(0,nrow=S,ncol=N_stick)
 
-#Inizializzazione di xi, p, k, pl, logpl per lo step 3 ( inizializzati come zeri dava too few
-#positive probabilities)
+
 xi <- compute_GD_prior(N_stick,alpha0,k)
-# given the vector k = [1,..., 1] of length = S
 p[1] <- xi[1]
 p[2:N_stick-1] <- sapply(2:N_stick, function(j) xi[j] * prod(1 - xi[1:(j-1)]))
 p[N_stick] <- 1 - sum( p[1:N_stick-1] )
@@ -42,19 +41,23 @@ for (j in seq(1,S,1)) {
 sigmaB = 10
 eta_h<-1/100
 
+#Lists for chains
 list_B <- list()
 list_A <- list()
 list_Z <- list()
 list_k <- list()
 list_R <- list()
 list_sigmaeps2 <- list()
+toc()
 
+tic("Gibbs loop")
 #Gibbs sampler
 for(i in 1:ndraws){
   #1
   #A<-STEP1(N_stick,r,sigmaeps2,Z,Q,k,x,Dz,W,V,B)
   #A<-L$A
   #Cardinality_S<-L$Cardinality_S
+  
   A<-STEP1RCPP(N_stick,r,sigmaeps2,Z,Q,k,x,Dz,W,V,B,eta_h,Y)
   print(A)
   #2
@@ -89,6 +92,7 @@ Dz<-STEP6(r,Dz,Z,N_stick)
  # list_R[[niter]] <- R
   list_sigmaeps2[[i]] <- sigmaeps2
 }
+toc()
 
 #Here we get the chain for one element of matrix A
 chain<-list()
@@ -115,14 +119,14 @@ for(i in (1:S)){
 bp<-list()
 A_sup<<-apply(simplify2array(list_A),1:2,quantile,0.95)
 A_inf<<-apply(simplify2array(list_A),1:2,quantile,0.05)
-EE<-matrix(0,nrow=S,ncol=r)
-for(r in(burnin:ndraws)){
-  EE<-list_A[[r]]
-  if(dim(uniquecombs(EE))[1]=="NULL"){bp[[r]]<-0}
-  else{
-  bp[[r]]<-dim(uniquecombs(EE))[1]}
-}
-bp<-bp[burnin:ndraws]
+# EE<-matrix(0,nrow=S,ncol=r)
+# for(r in(burnin:ndraws)){
+#   EE<-list_A[[r]]
+#   if(dim(uniquecombs(EE))[1]=="NULL"){bp[[r]]<-0}
+#   else{
+#   bp[[r]]<-dim(uniquecombs(EE))[1]}
+# }
+# bp<-bp[burnin:ndraws]
 
 #bp<-bp[burnin:ndraws]
 #What you take back in the main
