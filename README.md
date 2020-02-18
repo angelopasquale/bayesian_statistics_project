@@ -1,89 +1,58 @@
-# Project Title
+# Joint Species Distribution Models - Gibbs sampling implementation in RCpp
 
-One Paragraph of project description goes here
+This project aims at implementing a Gibbs Sampler for the GJAM model presented by [Taylor and Rodriguez](https://projecteuclid.org/euclid.ba/1478073617). Here below the complete model:
 
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
 
-### Prerequisites
-
-What things you need to install the software and how to install them
-
-```
-Give examples
-```
+### Prerequisites and installing
 
 ### Installing
 
-A step by step series of examples that tell you how to get a development env running
-
-Say what the step will be
+The script install.R provides automatical installation of required R packages as well as Rcpp interface. This is done simply by the following check: 
 
 ```
-Give the example
+needed_packages  <- c("MASS","coda","ggmcmc","extrafont","mgcv","mvtnorm", "matlib", "devtools", "MCMCpack", "gjam", "invgamma","MixMatrix", "tictoc", "corpcor")
+new_packages  <- needed_packages[!(needed_packages %in%installed.packages ()[, "Package"])] if (length(new_packages))
+install.packages(new_packages)
+lapply(needed_packages , require , character.only = TRUE)}
 ```
-
-And repeat
-
-```
-until finished
-```
-
-End with an example of getting some data out of the system or using it for a little demo
 
 ## Running the tests
 
-Explain how to run the automated tests for this system
+Run the script **main.R** for a testcase.  
 
 ### Break down into end to end tests
 
-Explain what these tests test and why
+Data and model true parameters are simulated through **simulation_fun** contained in **main.R**. Here, dimensions of the model need to be fixed:
+* **Sp** = number of species
+* **nsamples** = number of sites 
+* **r** = number of latent factor 
+* **K_t** = number of clusters in the matrix **A_true**.
 
-```
-Give an example
-```
+Then, a call to the Gibbs sampler function **gjam_gibbs_sampler** is performed and posterior draws for the model are obtained. 
 
-### And coding style tests
+Afterwards, the **check_CR** function is called in order to check credible regions for the chains with respect to the true (benchmark) values.
 
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-## Deployment
-
-Add additional notes about how to deploy this on a live system
+Moreover, the analysis of convergence of the chains is performed through traceplots, autocorrelation and running mean.
 
 ## Built With
 
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
-
-## Contributing
-
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
-
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
+* [Armadillo](http://arma.sourceforge.net) - for linear algebra in C+++
+* [Eigen](https://eigen.tuxfamily.org/dox/) - for linear algebra in C+++
+* [gjam](https://cran.r-project.org/web/packages/gjam/index.html) - for GJAM modelling
+* [ggmcmc](https://cran.r-project.org/web/packages/ggmcmc/vignettes/using_ggmcmc.html) - for analysis of Gibbs chains
 
 ## Authors
 
-* **Matteo Contini** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
-
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+* **Angelo Pasquale** - *Politecnico di Milano - Ecole Centrale de Nantes - MSc in Computational Science and Engineering* -
+* **Matteo Contini** - *Politecnico di Milano - Ecole Centrale de Lyon - MSc in Applied Statistics* -
+* **Lorenzo Fiorello** - *Politecnico di Milano - MSc in Applied Statistics* -
 
 ## Acknowledgments
 
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc
+* Bayesian Statistics course professor and assistants
+* Project tutors Doct. Riccardo Corradin and Poggiato Giovanni (PhD at Laboratoire d’Ecologie Alpine - Inria Grenoble)
 
 
