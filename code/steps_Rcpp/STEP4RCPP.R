@@ -1,5 +1,5 @@
 STEP4RCPP<-function(p,N_stick,S,alpha0,k){
-  tic("Step 1")
+  tic("Step 4")
   #This step computes probabilities p a posteriori
   p <- .sampleP(N = N_stick, avec = rep(alpha0/N_stick,(N_stick-1)),
                 bvec = ((N_stick-1):1)*alpha0/N_stick, K = k) 
