@@ -10,7 +10,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Installing
 
-The script install.R provides automatical installation of required R packages as well as Rcpp interface. This is done simply by the following check: 
+The script **install.R** provides automatical installation of required **R** packages as well as **Rcpp** interface. This is done simply by the following check: 
 
 ```
 needed_packages  <- c("MASS","coda","ggmcmc","extrafont","mgcv","mvtnorm", "matlib", "devtools", "MCMCpack", "gjam", "invgamma","MixMatrix", "tictoc", "corpcor")
