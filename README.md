@@ -43,7 +43,8 @@ lapply(needed_packages , require , character.only = TRUE)}
   * ***steps_R***, which contains all steps of the Gibbs sampler in **R** as separated functions;
   * ***steps_Rcpp***, which contains all steps of the Gibbs sampler in **Rcpp** as separated functions;
 * ***references*** folder contains main bibliography exploited in our work;
-* ***WIP_code*** contains work-in-progress code.
+* ***WIP_code*** contains work-in-progress code;
+* ***report.pdf*** contains a report of the project.
 
 ## Running the tests
 
@@ -62,6 +63,18 @@ Then, a call to the Gibbs sampler function **gjam_gibbs_sampler** is performed a
 Afterwards, the **check_CR** function is called in order to check credible regions for the chains with respect to the true (benchmark) values.
 
 Moreover, the analysis of convergence of the chains is performed through traceplots, autocorrelation and running mean.
+
+### Some results
+
+Considering for instance an element of matrix **A**, we get the chain:
+* autocorrelation
+![alt text](https://github.com/angelopasquale/bayesian_statistics_project/blob/master/images/autocorr100000.png)
+* values
+![alt text](https://github.com/angelopasquale/bayesian_statistics_project/blob/master/images/freq100000.png)
+* running mean
+![alt text](https://github.com/angelopasquale/bayesian_statistics_project/blob/master/images/rm100000iter.png)
+* traceplot
+![alt text](https://github.com/angelopasquale/bayesian_statistics_project/blob/master/images/tr.png)
 
 ## Built With
 
