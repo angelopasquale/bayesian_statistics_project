@@ -18,6 +18,12 @@ new_packages  <- needed_packages[!(needed_packages %in%installed.packages ()[, "
 install.packages(new_packages)
 lapply(needed_packages , require , character.only = TRUE)}
 ```
+### Code and folders structure
+* ***main.R*** calls the main functions:
+  * **simulation_fun** : data and model true parameters generation;
+  * **gjam_gibbs_sampler** : Gibbs sampler using data previously simulated;
+  * **check_CR** : confidence regions for the chains;
+  * **chain_convergence** : analysis of Gibbs chain.
 
 ## Running the tests
 
