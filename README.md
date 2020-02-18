@@ -4,7 +4,7 @@ This project aims at implementing a Gibbs Sampler for the GJAM model presented b
 
 For a detailed mathematical description of the model, please refer to our report, contained in this Github repository.
 
-![alt text](http://url/to/img.png)
+![alt text](https://github.com/angelopasquale/bayesian_statistics_project/blob/master/model.pdf)
 
 ## Getting Started
 
