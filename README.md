@@ -68,9 +68,9 @@ Moreover, the analysis of convergence of the chains is performed through tracepl
 
 ## Authors
 
-* **Angelo Pasquale** - *Politecnico di Milano - Ecole Centrale de Nantes - MSc in Computational Science and Engineering* -
-* **Matteo Contini** - *Politecnico di Milano - Ecole Centrale de Lyon - MSc in Applied Statistics* -
-* **Lorenzo Fiorello** - *Politecnico di Milano - MSc in Applied Statistics* -
+* **Angelo Pasquale** - *Politecnico di Milano - Ecole Centrale de Nantes - MSc in Computational Science and Engineering*
+* **Matteo Contini** - *Politecnico di Milano - Ecole Centrale de Lyon - MSc in Applied Statistics*
+* **Lorenzo Fiorello** - *Politecnico di Milano - MSc in Applied Statistics*
 
 ## Acknowledgments
 
