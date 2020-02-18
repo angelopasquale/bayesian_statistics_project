@@ -70,11 +70,11 @@ Considering for instance an element of matrix **A**, we get the chain:
 * autocorrelation
 <img src="https://github.com/angelopasquale/bayesian_statistics_project/blob/master/images/autocorr10000.png" width="50%" height="50%">
 * values
-![alt text](https://github.com/angelopasquale/bayesian_statistics_project/blob/master/images/freq10000.png){:height="50%" width="50%"}
+<img src="https://github.com/angelopasquale/bayesian_statistics_project/blob/master/images/freq10000.png" width="50%" height="50%">
 * running mean
-![alt text](https://github.com/angelopasquale/bayesian_statistics_project/blob/master/images/rm10000iter.png){:height="50%" width="50%"}
+<img src="https://github.com/angelopasquale/bayesian_statistics_project/blob/master/images/rm10000iter.png" width="50%" height="50%">
 * traceplot
-![alt text](https://github.com/angelopasquale/bayesian_statistics_project/blob/master/images/ts.png){:height="50%" width="50%"}
+<img src="https://github.com/angelopasquale/bayesian_statistics_project/blob/master/images/ts.png" width="50%" height="50%">
 
 ## Built With
 
