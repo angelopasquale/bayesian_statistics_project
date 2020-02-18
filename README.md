@@ -1,6 +1,8 @@
 # Joint Species Distribution Models - Gibbs sampling implementation in RCpp
 
-This project aims at implementing a Gibbs Sampler for the GJAM model presented by [Taylor and Rodriguez](https://projecteuclid.org/euclid.ba/1478073617). Here below the complete model:
+This project aims at implementing a Gibbs Sampler for the GJAM model presented by [Taylor and Rodriguez](https://projecteuclid.org/euclid.ba/1478073617). 
+
+For a detailed mathematical description of the model, please refer to our report, contained in this Github repository.
 
 ## Getting Started
 
