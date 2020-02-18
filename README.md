@@ -39,8 +39,8 @@ Moreover, the analysis of convergence of the chains is performed through tracepl
 
 ## Built With
 
-* [Armadillo](http://arma.sourceforge.net) - for linear algebra in C+++
-* [Eigen](https://eigen.tuxfamily.org/dox/) - for linear algebra in C+++
+* [Armadillo](http://arma.sourceforge.net) - for linear algebra in C++
+* [Eigen](https://eigen.tuxfamily.org/dox/) - for linear algebra in C++
 * [gjam](https://cran.r-project.org/web/packages/gjam/index.html) - for GJAM modelling
 * [ggmcmc](https://cran.r-project.org/web/packages/ggmcmc/vignettes/using_ggmcmc.html) - for analysis of Gibbs chains
 
@@ -52,7 +52,8 @@ Moreover, the analysis of convergence of the chains is performed through tracepl
 
 ## Acknowledgments
 
-* Bayesian Statistics course professor and assistants
+* Bayesian Statistics course professor Alessandra Guglielmi
 * Project tutors Doct. Riccardo Corradin and Poggiato Giovanni (PhD at Laboratoire d’Ecologie Alpine - Inria Grenoble)
+* Project tutor Mario Beraha
 
 
