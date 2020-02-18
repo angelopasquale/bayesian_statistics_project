@@ -1,4 +1,5 @@
 STEP7RCPP<-function(A,sigmaeps2,S,B,n_sites,W,Y,x){
+  tic("Step 7")
   Sigma_star = A %*% t(A) + sigmaeps2 * diag(S)
   D = diag(diag(Sigma_star))
   R = solveRcpp(D)^(1/2) %*% Sigma_star %*% solveRcpp(D)^(1/2)
@@ -17,10 +18,11 @@ STEP7RCPP<-function(A,sigmaeps2,S,B,n_sites,W,Y,x){
       }
     }
   }
-  #print(dim(solveRcpp(D)^(1/2)))
- # print(dim(V_star))
   V = V_star %*% solveRcpp(D)^(1/2)
-  newList <- list("V" = V, "V_star" = V_star, "D"=D,"B_star"=B_star)
-  return(newList)
-  
+  toc(log=TRUE,quiet=TRUE)
+  log.txt <- tic.log(format = TRUE)
+  log.lst <- tic.log(format = FALSE)
+  tic.clearlog()
+  timings <- unlist(lapply(log.lst, function(x) x$toc - x$tic))
+  return(list("V" = V, "V_star" = V_star, "D"=D,"B_star"=B_star,"timer"=timings))
 }

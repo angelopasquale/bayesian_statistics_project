@@ -2,15 +2,15 @@
 source(file = "gjamHfunctions.R")
 library(gjam)
 
-f <- gjamSimData(n = 30, S = 6, Q = 2, typeNames = 'PA')
+f <- gjamSimData(n = 100, S = 5, Q = 2, typeNames = 'PA')
 
-#source(file = "/Users/angelopasquale/Documents/University/LM/YEAR2/SEM1/BS/Project/Bayesian_Statistics_Project/code/gjam.R")
+rl   <- list(r = 4, N = 13)
+ml   <- list(ng = 1000, burnin = 100, typeNames = 'PA', reductList = rl)
 
-rl   <- list(r = 4, N = 4)
-ml   <- list(ng = 2500, burnin = 500, typeNames = 'PA', reductList = rl)
-
-out  <- gjamReduct(f$formula, xdata = f$xdata, ydata = f$ydata, modelList = ml)
-
+#Here we call the original gjam function
+tic("GJAM")
+out  <- .gjam(f$formula, xdata = f$xdata, ydata = f$ydata, modelList = ml)
+toc()
 out$parameters$betaMu         # S by M coefficient matrix alpha
 out$parameters$betaStandXmu   # S by M standardized for X
 out$parameters$betaStandXWmu  # (S-F) by M standardized for W/X, centered factors

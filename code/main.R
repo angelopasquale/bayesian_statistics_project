@@ -30,16 +30,17 @@ source("steps_Rcpp/STEP8TaylorRCPP.R")
 source("src/compute_GD_prior.R")
 source("src/tnorm.R")
 source("src/gjamHfunctions.R")
-source("src/check_IC.R")
-source("src/gjam_gibbs_sampler.R")
+source("src/check_CR.R")
+source("src/gjam_gibbs_sampler_R.R")
+source("src/gjam_gibbs_sampler_Rcpp.R")
 
 # Initialization of function parameters
 alpha0<-1e2 #Dirichlet mass parameter
-ndraws=2500 #number of iterations
+ndraws=10000 #number of iterations
 burnin=500 #number of discarded iterations
-N_stick=13 #level of truncation of the Dirichlet process
+N_stick=150 #level of truncation of the Dirichlet process
 r=4 #number of latent factors
-S<-5 #number of species
+S<-30 #number of species
 n_sites=100 #number of locations
 
 
@@ -81,52 +82,28 @@ simulation_fun<-function(Sp=S,nsamples=n_sites, r=4, K_t=3){
   Ybin<- ifelse(Y_cont>0,1,0)
   Ycont<-Y_cont
   give_back<-list(A_true = Lambda, B_true=B, Xdesign=X, mu_true=L, R_true=R_true, V=Ycont, Y=Ybin)
+  
   return(give_back)
 }
+
 data<-simulation_fun()
 x<-data$Xdesign #x matrix of covariates
 Y<-data$Y #Binary matrix Y
 
-#Call of the function
-h_5<-gjam_gibbs_sampler(alpha0,ndraws,burnin,N_stick,r,S, n_sites,x,Y)
-#clpr<-h_5$bp
-#clpr<-as.vector(clpr)
-chain<-h_5
+#Call of the function (R or Rcpp)
+#result<-gjam_gibbs_sampler_Rcpp(alpha0,ndraws,burnin,N_stick,r,S, n_sites,x,Y)
+result<-gjam_gibbs_sampler_Rcpp(alpha0,ndraws,burnin,N_stick,r,S, n_sites,x,Y)
+
+# 
+# 
+# #Analysis of output
+# chain<-as.vector(chain)
+# chain<-as.numeric(chain)
+# chain<-as.data.frame(chain)
 
 
-#Analysis of output
-chain<-as.vector(chain)
-chain<-as.numeric(chain)
-chain<-as.data.frame(chain)
-# x=h$x
-# Y=h$Y
-# #h2<-prova_step(alpha0,niter,N_stick,r,S)
-# #h3<-prova_step(alpha0,niter,N_stick,r,S)
-# #h<-list(h1,h2,h3)
- chain<-as.mcmc(chain)
-# #h2<-as.mcmc(h2)
-# #h3<-as.mcmc(h3)
-# #h<-as.mcmc.list(h1,h2,h3)
- chain<-ggs(chain)
-# #GRAFICI DELLA CATENA
-# 
-# #Traceplot
-x11()
- ggs_traceplot(chain) + xlab('Iterations') + ylab('A[1,2] ') + theme(text = element_text(size=15, family="LM Roman 10")) +
-  + ggtitle('Traceplot') 
-# #Running Mean
- x11()
- ggs_running(chain)
-# 
+# # #h<-as.mcmc.list(h1,h2,h3)
+
 # #Intervalli di confidenza per A
 # mat_bin=matrix(0,nrow=S,ncol=r)
 # #check_IC(h$A_inf, h$A_sup, h$A_true, mat_bin)
-# 
-# #Autocorrelation
-x11() 
-ggs_autocorrelation(chain)
-# 
-x11()
-ggs_histogram(chain)
- 
-effectiveSize(chain$value)

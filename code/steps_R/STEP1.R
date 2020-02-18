@@ -1,4 +1,5 @@
-STEP1<-function(N_stick,r,sigmaeps2,Z,Q,k,x,Dz,W,V,B){
+STEP1<-function(N_stick,r,sigmaeps2,Z,Q,k,x,Dz,W,V,B,Cardinality_S){
+  tic("Step 1")
   for ( j in 1:N_stick ) {
     if (!(j %in% k)) {
       Z[j,] <- rmvnorm ( n = 1, mean = rep(0, times = r), sigma = Dz )
@@ -24,5 +25,10 @@ STEP1<-function(N_stick,r,sigmaeps2,Z,Q,k,x,Dz,W,V,B){
     }
   }
   A<- Q %*% Z
-  A
+  toc(log=TRUE,quiet=TRUE)
+  log.txt <- tic.log(format = TRUE)
+  log.lst <- tic.log(format = FALSE)
+  tic.clearlog()
+  timings <- unlist(lapply(log.lst, function(x) x$toc - x$tic))
+  return(list("A"=A,"timer"=timings))
 }

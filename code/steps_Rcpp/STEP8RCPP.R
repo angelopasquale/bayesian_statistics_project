@@ -1,5 +1,6 @@
 STEP8RCPP<-function(S,x,sigmaeps2,V_star,W,A,sigmaB,n_cov,D,B_star){
-  # Step 8 : TO CHECK, and REALLY CAREFULLY !!!!!!!!! to do in Rcpp?
+  tic("Step 8")
+  # Step 8 
   for (j in seq(1,S,1)) {
     muBetaj = solveRcpp(1/(sigmaB)^2 * diag(n_cov) + 1/sigmaeps2 * t(x) %*% x) %*% t(x) %*% (V_star[,j] - W %*% A[j,]) * 1/sigmaeps2
     sigmaBetaj = solveRcpp(1/(sigmaB^2) * diag(n_cov) + 1/sigmaeps2 * t(x) %*% x)
@@ -10,5 +11,10 @@ STEP8RCPP<-function(S,x,sigmaeps2,V_star,W,A,sigmaB,n_cov,D,B_star){
   }
   
   B = solveRcpp(D)^(1/2) %*% B_star;
- B
+  toc(log=TRUE,quiet=TRUE)
+  log.txt <- tic.log(format = TRUE)
+  log.lst <- tic.log(format = FALSE)
+  tic.clearlog()
+  timings <- unlist(lapply(log.lst, function(x) x$toc - x$tic))
+  return(list("B"=B,"timer"=timings))
 }
