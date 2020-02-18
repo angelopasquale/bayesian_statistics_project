@@ -1,5 +1,5 @@
-source(file = "R/gjamHfunctions.R")
-.gjamReduct <- function(formula, xdata, ydata, modelList){
+source(file = "gjamHfunctions.R")
+gjamReduct <- function(formula, xdata, ydata, modelList){
   
   holdoutN      <-  0
   holdoutIndex  <- numeric(0)
