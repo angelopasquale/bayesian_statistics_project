@@ -2,7 +2,7 @@
 
 This project aims at implementing a Gibbs Sampler for the here below GJAM model, presented by [Taylor and Rodriguez](https://projecteuclid.org/euclid.ba/1478073617):
 
-![alt text](https://github.com/angelopasquale/bayesian_statistics_project/blob/master/model-1.png)
+![alt text](https://github.com/angelopasquale/bayesian_statistics_project/blob/master/images/model-1.png)
 
 For a detailed mathematical description of the model, please refer to our report, contained in this Github repository.
 
