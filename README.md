@@ -52,8 +52,8 @@ Moreover, the analysis of convergence of the chains is performed through tracepl
 
 ## Acknowledgments
 
-* Bayesian Statistics course professor Alessandra Guglielmi
-* Project tutors Doct. Riccardo Corradin and Poggiato Giovanni (PhD at Laboratoire d’Ecologie Alpine - Inria Grenoble)
-* Project tutor Mario Beraha
+* Bayesian Statistics course Professor Alessandra Guglielmi
+* Project supervisors Dr.s Riccardo Corradin and Poggiato Giovanni (PhD at Laboratoire d’Ecologie Alpine - Inria Grenoble)
+* Project tutor Dr. Mario Beraha
 
 
