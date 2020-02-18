@@ -19,22 +19,25 @@ install.packages(new_packages)
 lapply(needed_packages , require , character.only = TRUE)}
 ```
 ### Code and folders structure
-* ***main.R*** calls the main functions:
-  * **simulation_fun** : data and model true parameters generation;
-  * **gjam_gibbs_sampler** : Gibbs sampler using data previously simulated;
-  * **check_CR** : confidence regions for the chains;
-  * **chain_convergence** : analysis of Gibbs chain.
-* ***simulation_gjam.R*** is used for a preliminary analysis based on the library [**gjam**](https://cran.r-project.org/web/packages/gjam/index.html);
-* ***src*** folder contains source files:
-  * ***cpp/cppFns.cpp*** contains **c++** functions;
-  * ***chain_convergence.R***;
-  * ***check_CR***;
-  * ***compute_GD_prior***, which computes the Generalized Dirichlet prior;
-  * ***gjam_gibbs_sampler_Rcpp.R***, contains our Gibbs sampler in Rcpp;
-  * ***gjam_gibbs_sampler_R.R***, contains our Gibbs sampler in Rcpp;
-  * ***tnorm.R***, function for sampling from a truncated normal;
-  * ***gjam.R***, which contains an extrapolation from **gjam** library source code (needed from ***simulation_gjam.R***);
-  * ***gjamHfunctions.R***, which contains **gjam** library source functions (needed from ***simulation_gjam.R***);
+* ***code*** contains:
+  * ***main.R*** calls the main functions:
+    * **simulation_fun** : data and model true parameters generation;
+    * **gjam_gibbs_sampler** : Gibbs sampler using data previously simulated;
+    * **check_CR** : confidence regions for the chains;
+    * **chain_convergence** : analysis of Gibbs chain.
+  * ***simulation_gjam.R*** is used for a preliminary analysis based on the library [**gjam**](https://cran.r-project.org/web/packages/gjam/index.html);
+  * ***src*** folder contains source files:
+    * ***cpp/cppFns.cpp*** contains **c++** functions;
+    * ***chain_convergence.R***;
+    * ***check_CR***;
+    * ***compute_GD_prior***, which computes the Generalized Dirichlet prior;
+    * ***gjam_gibbs_sampler_Rcpp.R***, contains our Gibbs sampler in Rcpp;
+    * ***gjam_gibbs_sampler_R.R***, contains our Gibbs sampler in Rcpp;
+    * ***tnorm.R***, function for sampling from a truncated normal;
+    * ***gjam.R***, which contains an extrapolation from **gjam** library source code (needed from ***simulation_gjam.R***);
+    * ***gjamHfunctions.R***, which contains **gjam** library source functions (needed from ***simulation_gjam.R***);
+  * ***steps_R***, which contains all steps of the Gibbs sampler in **R** as separated functions;
+  * ***steps_Rcpp***, which contains all steps of the Gibbs sampler in **Rcpp** as separated functions;
 * ***references*** folder contains main bibliography exploited in our work;
 * ***WIP_code*** contains work-in-progress code.
 
