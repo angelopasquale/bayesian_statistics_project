@@ -1,5 +1,6 @@
 STEP1RCPP<-function(N_stick,r,sigmaeps2,Z,Q,k,x,Dz,W,V,B,eta_h,Y){
   ##### Step 1 #####
+  #This step computes matrix A
   #print("-----------------------------")
   #print("------------STEP1------------")
   # resample the cluster assignments

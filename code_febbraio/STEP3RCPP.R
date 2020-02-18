@@ -1,4 +1,6 @@
 STEP3RCPP<-function(p,V,Z,x,B,W,sigmaeps2,N_stick){
+  ###STEP 3###
+  #This function computes vector of labels a posteriori
   pl <- getPmatKRcpp(pveck = p,Yk = V, Zk = Z,
                      Xk = x, Bk = B, Wk = W,
                      sigmasqk = sigmaeps2)

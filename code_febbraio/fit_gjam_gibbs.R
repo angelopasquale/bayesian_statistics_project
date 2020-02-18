@@ -1,4 +1,5 @@
-prova_step<-function(alpha0,niter,burnin,N_stick,r,S){
+fit_gjam_gibbs<-function(alpha0,ndraws,burnin,N_stick,r,S,n_sites,x,Y){
+
 eta_h <- 1/rgamma(r, shape = 1/2,  rate = 1/1e4  )
 Dz<-riwish( 2 + r - 1, 4 * diag(1/eta_h))
 W<-matrix(0,nrow=n_sites,ncol=r)
@@ -29,51 +30,9 @@ k = sample(1:N_stick, size = S, replace=TRUE, prob = p)
 pl <- matrix(0, nrow = S, ncol = N_stick)  
 logpl <- matrix(0, nrow = S, ncol = N_stick)
 
-#Questa funzione genera la matrice x delle covariate e la matrice B dei beta
-simulation_fun<-function(Sp=S,nsamples=n_sites, r=4, K_t=4){
-  S<-Sp
-  n<- nsamples
-  #iterations<-it
-  
-  #create the design matrix: here we use the intercept and one covariate (scaled!)
-  X<-cbind(rep(1,n),scale(runif(0,100,n=n))) 
-  
-  #create the coefficient matrix B (Sx2)
-  idx<-sample(S)
-  B_0<-scale(seq(0,100,length.out=S)[idx]) #intercept
-  idx<-sample(S)
-  B_1<-scale(seq(0,100,length.out=S)[idx]) #covariate coefficient
-  B<-cbind(B_0,B_1) #Coefficient matrix
-  L<-X%*%t(B) #We create the mean by multiplying B with the design matrix X
-  
-  
-  #We create A and then Sigma
-  A<-matrix(NA,nrow=K_t,ncol=r) #A is the matrix with the atoms only. Initialization.
-  sig=matrix(runif(n=r*r),ncol=r) #sig is the variance covariance matrix of Z.
-  for(i in 1:K_t){
-    A[i,]<-mvrnorm(n = 1, rep(0,r), Sigma=1*diag(r)) # We sample the unique values of A
-  }
-  idx<-sample((1:K_t),S,replace=T) #idx represents the labels
-  Lambda<-A[idx,] #We expand A using the labels to obtain Lambda (what we used to call A)
-  Sigma_true<-Lambda%*%t(Lambda)+0.1*diag(S) #We obtain Sigma. Here sigma_epsilon^2 is 0.1
-  
-  
-  #We obtain the correlation matrix R
-  R_true=cov2cor(Sigma_true) 
-  
-  #We sample V from the model
-  Y_cont<-L+rmvnorm(n = n, mean=rep(0,S), sigma=R_true)
-  # We obtain our binary dataset. Secondo me vi conviene prima testare il modello con Y_cont e poi su Y
-  Ybin<- ifelse(Y_cont>0,1,0)
-  Ycont<-Y_cont
-  give_back<-list(A_true = Lambda, B_true=B, Xdesign=X, mu_true=L, R_true=R_true, V=Ycont, Y=Ybin)
-  return(give_back)
-}
-data<-simulation_fun()
-x<-data$Xdesign
-#initialization of B
-#B<-data$B_true
-n_cov = ncol(x) # number of covariates (no intercept)
+
+
+n_cov = ncol(x) # number of covariates 
 muBeta = rep ( 0, times=n_cov ) # Prior mean of the beta coefficients
 sigmaBeta = diag ( n_cov ) # Prior variance-covariance matrix of the beta coefficients
 B <- matrix(data = 0, nrow = S, ncol = n_cov) # coefficient matrix
@@ -81,7 +40,6 @@ for (j in seq(1,S,1)) {
   B[j,] <- rmvnorm ( n = 1, mean = muBeta, sigma = 10*sigmaBeta )
 }
 sigmaB = 10
-Y<-data$Y
 eta_h<-1/100
 
 list_B <- list()
@@ -91,8 +49,8 @@ list_k <- list()
 list_R <- list()
 list_sigmaeps2 <- list()
 
-#Lancio gli steps
-for(i in 1:niter){
+#Gibbs sampler
+for(i in 1:ndraws){
   #1
   #A<-STEP1(N_stick,r,sigmaeps2,Z,Q,k,x,Dz,W,V,B)
   #A<-L$A
@@ -131,28 +89,43 @@ Dz<-STEP6(r,Dz,Z,N_stick)
  # list_R[[niter]] <- R
   list_sigmaeps2[[i]] <- sigmaeps2
 }
-h<-list()
-#for(i in (burnin:niter)){
- # h[[i]]<-list_A[[i]][2,2]
-#}
-#h<-as.numeric(h)
-#h<-as.data.frame(h)
+
+#Here we get the chain for one element of matrix A
+chain<-list()
+for(i in (burnin:ndraws)){
+  chain[[i]]<-list_A[[i]][1,2]
+chain}
+#Cutting away burnin NULL values in the chain
+chain<-chain[burnin:ndraws]
+
+
+#Here is created mean matrix A of the chain
 A_media=matrix(0,nrow=S,ncol=r)
 for(i in (1:S)){
   for(j in (1:r)){
     tot=0
-    for(k in (burnin:niter)){
+    for(k in (burnin:ndraws)){
       tot=tot+list_A[[k]][i,j]
     }
-    A_media[i,j]=tot/(niter-burnin)
+    A_media[i,j]=tot/(ndraws-burnin)
   }
 }
 
 #A = return_list$A
-
+bp<-list()
 A_sup<<-apply(simplify2array(list_A),1:2,quantile,0.95)
 A_inf<<-apply(simplify2array(list_A),1:2,quantile,0.05)
-h<-list("A_media"=A_media,"A_true"=data$A_true,"A_inf"=A_inf,"A_sup"=A_sup)
-h
+EE<-matrix(0,nrow=S,ncol=r)
+for(r in(burnin:ndraws)){
+  EE<-list_A[[r]]
+  bp[[r]]<-dim(uniquecombs(EE))[1]
+}
+bp<-bp[burnin:ndraws]
+
+#bp<-bp[burnin:ndraws]
+#What you take back in the main
+#h<-list("A_media"=A_media,"A_true"=data$A_true,"A_inf"=A_inf,"A_sup"=A_sup,"x"=x,"Y"=Y,"bp"=bp)
+return(chain)
+#return(h)
 }
   
