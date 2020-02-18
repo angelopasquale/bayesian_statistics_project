@@ -5,7 +5,10 @@ rm(list=ls())
 # Clear console
 cat("\014") 
 
-
+needed_packages <- c("MASS","coda","ggmcmc","extrafont","mgcv","mvtnorm", "matlib", "devtools", "MCMCpack", "gjam", "invgamma", "MixMatrix", "tictoc", "corpcor") 
+new_packages <- needed_packages[!(needed_packages %in% installed.packages()[, "Package"])] 
+if (length(new_packages)) install.packages(new_packages) 
+lapply(needed_packages, require, character.only = TRUE) 
 
 # Install **TTF** Latin Modern Roman fonts from www.fontsquirrel.com/fonts/latin-modern-roman
 # Import the newly installed LModern fonts, change the pattern according to the 
