@@ -9,5 +9,4 @@ STEP4RCPP<-function(p,N_stick,S,alpha0,k){
   tic.clearlog()
   timings <- unlist(lapply(log.lst, function(x) x$toc - x$tic))
   return(list("p"=p,"timer"=timings))
-  
 }
