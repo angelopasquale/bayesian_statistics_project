@@ -35,9 +35,9 @@ source("src/gjam_gibbs_sampler_Rcpp.R")
 
 # Initialization of function parameters
 alpha0<-1 #Dirichlet mass parameter
-ndraws=1000 #number of iterations
+ndraws=3000 #number of iterations
 burnin=500 #number of discarded iterations
-S<-30 #number of species
+S<-150 #number of species
 N_stick=min(150,S) #level of truncation of the Dirichlet process
 r=4 #number of latent factors
 n_sites=100 #number of locations
@@ -96,13 +96,13 @@ result<-gjam_gibbs_sampler_Rcpp(alpha0,ndraws,burnin,N_stick,r,S, n_sites,x,Y)
 # 
 # 
 # #Analysis of output
-# chain<-as.vector(chain)
-# chain<-as.numeric(chain)
-# chain<-as.data.frame(chain)
+chain<-as.vector(result$chain)
+chain<-as.numeric(chain)
+chain<-as.data.frame(chain)
 
 
 # # #h<-as.mcmc.list(h1,h2,h3)
 
 # #Intervalli di confidenza per A
-# mat_bin=matrix(0,nrow=S,ncol=r)
-# #check_IC(h$A_inf, h$A_sup, h$A_true, mat_bin)
+mat_bin=matrix(0,nrow=S,ncol=r)
+check_CR(result$A_inf, result$A_sup, data$A_true, mat_bin)
